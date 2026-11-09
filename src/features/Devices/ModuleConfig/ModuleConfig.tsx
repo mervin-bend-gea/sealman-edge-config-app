@@ -133,7 +133,7 @@ function JsonForm({
           </GuardedButton>
 
           <span className="ml-2">
-            ⚠️ Changes may take a few seconds to apply. If you reopen this modal
+            ⚠️ Changes may take a few seconds to apply. If you reload this page
             immediately, you might still see the old values. Please wait a
             moment and try again.
           </span>

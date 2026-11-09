@@ -10,6 +10,7 @@ import {
 import type { ReactNode } from "react";
 import DeviceConfig from "./DeviceConfig/DeviceConfig";
 import ModuleList from "./ModuleConfig/ModuleList";
+import ModulePage from "./ModuleConfig/ModulePage";
 import DeviceInformation from "./DeviceInfo/DeviceInformation";
 import useGetDevice from "@/generated/edge-administration/hooks/devices/useGetDevice";
 import OPCUABrrowserPage from "../../pages/OPCUABrowser";
@@ -114,15 +115,23 @@ export default function DeviceDetail() {
             />
             <Route path="device-config/*" element={<DeviceConfig />} />
             <Route
-              path="applications"
+              path="applications/*"
               element={
-                <DevicePanel
-                  title="Applications"
-                  description="The deployment assigned to this device and the modules running on it."
-                >
-                  <DeploymentInfo />
-                  <ModuleList />
-                </DevicePanel>
+                <Routes>
+                  <Route
+                    index
+                    element={
+                      <DevicePanel
+                        title="Applications"
+                        description="The deployment assigned to this device and the modules running on it. Select a module to configure it."
+                      >
+                        <DeploymentInfo />
+                        <ModuleList />
+                      </DevicePanel>
+                    }
+                  />
+                  <Route path=":moduleId/*" element={<Panel><ModulePage /></Panel>} />
+                </Routes>
               }
             />
             <Route

@@ -10,13 +10,11 @@ const mocks = vi.hoisted(() => ({
   user: "user-a",
   getModules: vi.fn(),
   getConfigStatus: vi.fn(),
+  navigate: vi.fn(),
 }));
 vi.mock("@/auth", () => ({ useAuth: () => ({ isAuthenticated: true, user: { sub: mocks.user } }) }));
-vi.mock("react-router-dom", () => ({ useParams: () => ({ deviceId: mocks.deviceId }) }));
+vi.mock("react-router-dom", () => ({ useParams: () => ({ deviceId: mocks.deviceId }), useNavigate: () => mocks.navigate }));
 vi.mock("@/api/edgeConfig/edgeConfigApi", () => ({ edgeConfigApi: { getModules: mocks.getModules, getConfigStatus: mocks.getConfigStatus } }));
-vi.mock("./ModuleLogs", () => ({ default: () => null }));
-vi.mock("./ModuleConfig", () => ({ default: () => null }));
-vi.mock("./DirectMethods", () => ({ default: () => null }));
 
 describe("Applications config-status denials", () => {
   let client: QueryClient;
@@ -32,6 +30,7 @@ describe("Applications config-status denials", () => {
       { moduleId: "$edgeHub", moduleName: "$edgeHub" },
     ]);
     mocks.getConfigStatus.mockReset().mockResolvedValue({});
+    mocks.navigate.mockReset();
     client = new QueryClient({ defaultOptions: queryClient.getDefaultOptions() });
   });
   afterEach(() => { client.clear(); vi.useRealTimers(); });
@@ -96,5 +95,24 @@ describe("Applications config-status denials", () => {
     expect(signal?.aborted).toBe(true);
     expect(screen.getByRole("cell", { name: "new module" })).toBeInTheDocument();
     expect(screen.queryByText("$edgeAgent")).not.toBeInTheDocument();
+  });
+
+  it("opens a module's own page on click and on Enter instead of a dialog", async () => {
+    mocks.getModules.mockResolvedValue([{ moduleId: "seal-opcua-client", moduleName: "seal-opcua-client" }]);
+    render(tree());
+    await flush();
+    const row = screen.getByRole("cell", { name: "seal-opcua-client" }).closest("tr")!;
+    fireEvent.click(row);
+    expect(mocks.navigate).toHaveBeenLastCalledWith("/devices/device-a/applications/seal-opcua-client");
+    fireEvent.keyDown(row, { key: "Enter" });
+    expect(mocks.navigate).toHaveBeenCalledTimes(2);
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+  });
+
+  it("encodes module IDs that are not URL-safe", async () => {
+    render(tree());
+    await flush();
+    fireEvent.click(screen.getByRole("cell", { name: "$edgeAgent" }).closest("tr")!);
+    expect(mocks.navigate).toHaveBeenLastCalledWith("/devices/device-a/applications/%24edgeAgent");
   });
 });
