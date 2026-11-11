@@ -15,6 +15,10 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import SettingsLayout from "./pages/settings/SettingsLayout";
 import PlatformTypesSettings from "./pages/settings/PlatformTypesSettings";
 import TemplatesSettings from "./pages/settings/TemplatesSettings";
+import NamespaceList from "./features/ModuleConfigTemplates/NamespaceList";
+import NamespacePage from "./features/ModuleConfigTemplates/NamespacePage";
+import TemplatePage from "./features/ModuleConfigTemplates/TemplatePage";
+import TemplatesLayout from "./features/ModuleConfigTemplates/TemplatesLayout";
 import SettingsPlaceholder from "./pages/settings/SettingsPlaceholder";
 import SealAgentSettings from "./pages/settings/SealAgentSettings";
 import DeploymentsLayout from "./pages/deployments/DeploymentsLayout";
@@ -83,6 +87,15 @@ export default function App() {
               <Route path=":deviceId/*" element={<DeviceDetail />} />
             </Route>
 
+            <Route path="module-templates" element={<TemplatesLayout />}>
+              <Route index element={<NamespaceList />} />
+              <Route path="new" element={<NamespacePage />} />
+              <Route path=":namespaceId" element={<NamespacePage />} />
+              <Route path=":namespaceId/edit" element={<NamespacePage mode="edit" />} />
+              <Route path=":namespaceId/templates/new" element={<TemplatePage />} />
+              <Route path=":namespaceId/templates/:templateId" element={<TemplatePage />} />
+            </Route>
+
             <Route path="platform-types" element={<AssetConfigurationLayout />}>
               <Route index element={<Navigate to="asset-types" replace />} />
               <Route path="asset-types" element={<PlatformTypesSettings />} />
@@ -147,6 +160,7 @@ export default function App() {
                 element={<SettingsPlaceholder title="Container Registries" description="Registries used to pull container images for deployments." />}
               />
               <Route path="templates" element={<TemplatesSettings />} />
+              <Route path="module-templates" element={<Navigate to="/module-templates" replace />} />
               <Route path="extensions" element={<ExtensionAccess />}>
                 <Route index element={<ExtensionsSettings />} />
                 <Route element={<ExtensionAccess permissionKey={PERMISSION_KEYS.EXTENSION_REGISTER} />}>

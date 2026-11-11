@@ -7,7 +7,7 @@ const SETTINGS_TABS = [
   { label: "Azure IoT Edge", path: "azure-iot-edge" },
   { label: "SEALMAN EMS", path: "sealman-ems" },
   { label: "Container Registries", path: "container-registries" },
-  { label: "Templates", path: "templates" },
+  { label: "SEMS Templates", path: "templates" },
 ];
 
 export default function SettingsLayout() {

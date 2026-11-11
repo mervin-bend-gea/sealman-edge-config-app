@@ -216,16 +216,16 @@ export default function TemplatesSettings() {
     <div className="space-y-10">
       <div className="space-y-6">
         <PageTitle
-          title="Selected Templates"
-          description="Templates that are applied to newly created devices."
+          title="Selected SEMS Templates"
+          description="SEMS templates that are applied to newly created devices."
         />
         <SelectedTemplatesSection />
       </div>
 
       <div className="space-y-6">
         <PageTitle
-          title="Template Variables"
-          description="Values made available to the templates when a device is created."
+          title="SEMS Template Variables"
+          description="Values made available to the SEMS templates when a device is created."
         />
         <DeviceTemplateVariablesSection />
       </div>

@@ -254,3 +254,17 @@
   .water-loader .wl-wave-front,
   .water-loader .wl-wave-back { animation: none; }
 }
+
+/* Placeholder highlighting in the module template editor (Ace markers) */
+.ace_marker-layer .tpl-ph-variable,
+.ace_marker-layer .tpl-ph-device,
+.ace_marker-layer .tpl-ph-escape,
+.ace_marker-layer .tpl-ph-invalid {
+  position: absolute;
+  z-index: 4;
+  border-radius: 3px;
+}
+.ace_marker-layer .tpl-ph-variable { background: rgba(22, 163, 74, 0.22); box-shadow: inset 0 0 0 1px rgba(22, 163, 74, 0.55); }
+.ace_marker-layer .tpl-ph-device { background: rgba(37, 99, 235, 0.2); box-shadow: inset 0 0 0 1px rgba(37, 99, 235, 0.55); }
+.ace_marker-layer .tpl-ph-escape { background: rgba(100, 116, 139, 0.2); }
+.ace_marker-layer .tpl-ph-invalid { background: rgba(220, 38, 38, 0.2); box-shadow: inset 0 -2px 0 rgba(220, 38, 38, 0.8); }

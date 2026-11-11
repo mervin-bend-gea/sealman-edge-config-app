@@ -3,6 +3,7 @@ import {
   ClockIcon,
   Cog6ToothIcon,
   CpuChipIcon,
+  DocumentDuplicateIcon,
   HomeIcon,
   PuzzlePieceIcon,
   RocketLaunchIcon,
@@ -29,6 +30,10 @@ export default function SideNavigation() {
     permissionKey: PERMISSION_KEYS.PLATFORM_AUTHORIZATION_READ,
   });
 
+  const { hasPermission: hasTemplateReadPermission, isLoading: isTemplatePermissionLoading } = usePermissions({
+    permissionKey: PERMISSION_KEYS.MODULE_CONFIG_TEMPLATE_READ,
+  });
+
   const user = useOutletUser();
   const extensionPages = useNavContributions("global", "page", { user });
 
@@ -37,8 +42,13 @@ export default function SideNavigation() {
       { name: "Dashboard", href: "/", icon: HomeIcon, end: true },
       { name: "Devices", href: "/devices", icon: CpuChipIcon },
       { name: "Asset Configuration", href: "/platform-types", icon: Squares2X2Icon, separatorBefore: true },
-      { name: "Deployments", href: "/deployments", icon: RocketLaunchIcon },
     ];
+
+    if (!isTemplatePermissionLoading && hasTemplateReadPermission) {
+      items.push({ name: "Module Templates", href: "/module-templates", icon: DocumentDuplicateIcon });
+    }
+
+    items.push({ name: "Deployments", href: "/deployments", icon: RocketLaunchIcon });
 
     if (!isPermissionsLoading && hasAuthorizationReadPermission) {
       items.push({ name: "Authorization", href: "/authorization/teams", icon: ShieldCheckIcon });
@@ -58,7 +68,7 @@ export default function SideNavigation() {
     }
 
     return items;
-  }, [hasAuthorizationReadPermission, isPermissionsLoading, extensionPages]);
+  }, [hasAuthorizationReadPermission, isPermissionsLoading, hasTemplateReadPermission, isTemplatePermissionLoading, extensionPages]);
 
   return (
     <aside className="flex h-full w-16 shrink-0 flex-col bg-[#0f1f47] lg:w-60">

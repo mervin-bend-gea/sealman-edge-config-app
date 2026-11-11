@@ -9,6 +9,7 @@ import { toast } from "react-toastify";
 import { getErrorMessage } from "@/lib/errors";
 import { withPermissionRequiredTooltip } from "@/features/authorization/permissions/withPermissionRequiredTooltip";
 import { PERMISSION_KEYS } from "@/features/authorization/permissions/permission-keys";
+import CreateTemplateFromConfigDialog from "@/features/ModuleConfigTemplates/CreateTemplateFromConfigDialog";
 
 interface ModuleConfigProps {
   moduleName: string;
@@ -84,6 +85,7 @@ function JsonForm({
   data,
 }: JsonFormProps) {
   const [twinConfigForm, setTwinConfig] = useState(data);
+  const [templateSource, setTemplateSource] = useState<unknown>();
   const { deviceId } = useParams();
   if (!deviceId) throw new Error("No deviceId provided");
 
@@ -98,6 +100,14 @@ function JsonForm({
         toast.error(`Could not schedule the config update: ${getErrorMessage(err)}`);
       },
     });
+  };
+
+  const onCreateTemplate = () => {
+    try {
+      setTemplateSource(JSON.parse(twinConfigForm));
+    } catch {
+      toast.error("The editor content is not valid JSON");
+    }
   };
 
   const handleFormChange = (newValue: string) => {
@@ -132,6 +142,16 @@ function JsonForm({
               Set Twin Config
           </GuardedButton>
 
+          <GuardedButton
+              permissionKey={PERMISSION_KEYS.MODULE_CONFIG_TEMPLATE_WRITE}
+              variant="outline"
+              className="mt-2 ml-2"
+              disabled={!twinConfigForm.trim()}
+              onClick={onCreateTemplate}
+            >
+              Create template from this
+          </GuardedButton>
+
           <span className="ml-2">
             ⚠️ Changes may take a few seconds to apply. If you reload this page
             immediately, you might still see the old values. Please wait a
@@ -139,6 +159,12 @@ function JsonForm({
           </span>
         </div>
       )}
+      <CreateTemplateFromConfigDialog
+        open={templateSource !== undefined}
+        onOpenChange={(open) => { if (!open) setTemplateSource(undefined); }}
+        moduleName={moduleName}
+        config={templateSource}
+      />
     </>
   );
 }

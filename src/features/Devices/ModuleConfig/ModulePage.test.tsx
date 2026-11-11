@@ -24,6 +24,7 @@ vi.mock("@/features/Extensions/outlets/ExtensionOutlet", () => ({
 }));
 vi.mock("./ModuleConfig", () => ({ default: ({ moduleName }: { moduleName: string }) => <div>built-in config for {moduleName}</div> }));
 vi.mock("./DirectMethods", () => ({ default: () => <div>methods view</div> }));
+vi.mock("./ModuleReported", () => ({ default: ({ moduleName }: { moduleName: string }) => <div>reported view for {moduleName}</div> }));
 vi.mock("./ModuleLogs", () => ({ default: () => <div>logs view</div> }));
 
 describe("ModulePage", () => {
@@ -73,6 +74,7 @@ describe("ModulePage", () => {
   it.each([
     ["methods", "methods view"],
     ["logs", "logs view"],
+    ["reported", "reported view for seal-opcua-client"],
   ])("routes the %s tab", async (tab, text) => {
     renderAt(`/devices/dev-1/applications/seal-opcua-client/${tab}`);
     await flush();

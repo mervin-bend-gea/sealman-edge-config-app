@@ -9,9 +9,10 @@ import useGetDeviceMetadata from "@/generated/edge-administration/hooks/device_m
 import { usePermissions } from "@/features/authorization/permissions/use-permissions";
 import { PERMISSION_KEYS } from "@/features/authorization/permissions/permission-keys";
 import type { ModuleData } from "@/api/edgeConfig/edgeConfigApiHooks";
-import ModuleConfig from "./ModuleConfig";
+import ModuleConfigPanel from "./ModuleConfigPanel";
 import DirectMethods from "./DirectMethods";
 import ModuleLogs from "./ModuleLogs";
+import ModuleReported from "./ModuleReported";
 import {
   ConfigStatusBadge,
   ConfigSyncBadge,
@@ -25,6 +26,7 @@ import { modulePath, useModuleData } from "./useModuleData";
 const TABS = [
   { label: "Module Configuration", to: "", end: true },
   { label: "Methods", to: "methods", end: false },
+  { label: "Reported", to: "reported", end: false },
   { label: "Logs", to: "logs", end: false },
 ];
 
@@ -89,7 +91,7 @@ function ModulePageContent({ deviceId, moduleId, identity }: { deviceId: string;
         <span className="text-sm text-muted-foreground">{module.version}</span>
       </header>
 
-      <nav aria-label="Module navigation" className="grid max-w-xl grid-cols-3 gap-1 rounded-lg bg-muted p-1 text-sm font-medium text-muted-foreground">
+      <nav aria-label="Module navigation" className="grid max-w-2xl grid-cols-4 gap-1 rounded-lg bg-muted p-1 text-sm font-medium text-muted-foreground">
         {TABS.map((tab) => (
           <NavLink
             key={tab.label}
@@ -107,6 +109,7 @@ function ModulePageContent({ deviceId, moduleId, identity }: { deviceId: string;
       <Routes>
         <Route index element={<ConfigTab deviceId={deviceId} module={module} onDataChanged={refresh} />} />
         <Route path="methods" element={<DirectMethods moduleName={module.moduleId} />} />
+        <Route path="reported" element={<ModuleReported deviceId={deviceId} moduleName={module.moduleId} />} />
         <Route path="logs" element={<ModuleLogs moduleName={module.moduleId} />} />
       </Routes>
     </div>
@@ -130,7 +133,7 @@ function ConfigTab({ deviceId, module, onDataChanged }: { deviceId: string; modu
       onDataChanged={onDataChanged}
       fallback={
         <div className="h-[65vh] min-h-[28rem]">
-          <ModuleConfig moduleName={module.moduleId} appMessage={module.appMessage} moduleStatus={module.status} />
+          <ModuleConfigPanel deviceId={deviceId} moduleName={module.moduleId} appMessage={module.appMessage} moduleStatus={module.status} />
         </div>
       }
     />
