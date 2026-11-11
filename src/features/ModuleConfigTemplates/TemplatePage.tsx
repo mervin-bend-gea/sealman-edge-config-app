@@ -1,8 +1,8 @@
-import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "react-toastify";
-import { Archive, ArchiveRestore, ArrowLeft, ChevronDown, ChevronRight, Copy, FileJson, GitCompare, Info } from "lucide-react";
+import { Archive, ArchiveRestore, ArrowLeft, Copy, FileJson, GitCompare, Info } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -22,12 +22,13 @@ import {
   type ExampleDevice, type Finding, type Namespace, type Template, type TemplateVersionSummary, type VariableDecl, type Values,
 } from "./api";
 import { NamespaceBadges } from "./badges";
+import Box from "./Box";
 import { FindingsList, VariableForm, VariablesEditor } from "./components";
 import DiffView from "./DiffView";
 import ExampleDevicePicker from "./ExampleDevicePicker";
-import NamespaceCombobox from "./NamespaceCombobox";
+import SearchableSelect from "@/components/Input/SearchableSelect";
 import {
-  TEMPLATES_PATH, VERSION_TAG_PATTERN, canonical, cleanVariables, deviceReferences, formatDate, placeholderAnnotations,
+  TEMPLATES_PATH, EDITOR_HEIGHT, VERSION_TAG_PATTERN, canonical, cleanVariables, deviceReferences, formatDate, placeholderAnnotations,
   placeholderMarkers, templatePath, useDebounced, variableProblems, versionLabel,
 } from "./utils";
 
@@ -43,10 +44,6 @@ const SAMPLE_DEVICE_METADATA = JSON.stringify(
   2,
 );
 
-// The template is what the user works on: it takes the viewport below the page header (never less than ~28 lines, never
-// more than ~60) so long configurations need little scrolling, and everything else sits below it.
-const EDITOR_HEIGHT = "h-[clamp(28rem,calc(100vh_-_14rem),64rem)]";
-
 const PREVIEW_COLLAPSED_KEY = "moduleTemplatePreviewCollapsed";
 
 interface Draft {
@@ -60,7 +57,7 @@ interface Draft {
 
 const emptyDraft = (namespaceId: number | null): Draft => ({
   name: "", description: "", namespaceId, body: EXAMPLE_BODY, comment: "",
-  variables: [{ name: "interval", type: "integer", required: true, default: 60 }],
+  variables: [{ name: "interval", type: "integer", required: true }],
 });
 
 function parseBody(text: string): { body?: unknown; error?: string } {
@@ -78,38 +75,6 @@ function suggestTag(taken: string[], latestVersion?: number | null) {
   return `v${n}`;
 }
 
-function Box({ label, title, description, actions, children, className, collapse }: {
-  label: string;
-  title?: string;
-  description?: ReactNode;
-  actions?: ReactNode;
-  children: ReactNode;
-  className?: string;
-  /** Makes the box compactable: only the header stays while collapsed. */
-  collapse?: { collapsed: boolean; onToggle: () => void };
-}) {
-  const collapsed = !!collapse?.collapsed;
-  return (
-    <section aria-label={label} className={cn("w-full space-y-4 rounded-lg border bg-card p-5", collapsed && "space-y-0 py-3", className)}>
-      {(title || actions) && (
-        <div className="flex flex-wrap items-center gap-3">
-          {collapse && (
-            <Button type="button" variant="ghost" size="icon" className="-ml-2 h-8 w-8" aria-expanded={!collapsed}
-                    aria-label={`${collapsed ? "Expand" : "Collapse"} ${title ?? label}`} onClick={collapse.onToggle}>
-              {collapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-            </Button>
-          )}
-          <div className="mr-auto space-y-1">
-            {title && <h2 className="text-lg font-semibold">{title}</h2>}
-            {description && !collapsed && <p className="text-sm text-muted-foreground">{description}</p>}
-          </div>
-          {actions}
-        </div>
-      )}
-      {!collapsed && children}
-    </section>
-  );
-}
 
 /** Subpage of a namespace: one template (or a new one) with its versions, preview and duplicate. */
 export default function TemplatePage() {
@@ -332,8 +297,10 @@ function TemplateForm({ template, namespaces, initialNamespaceId, canWrite, onOp
           </div>
           <div className="space-y-1">
             <Label htmlFor="tpl-namespace">Namespace</Label>
-            <NamespaceCombobox id="tpl-namespace" namespaces={namespaces} value={draft.namespaceId} disabled={readOnly}
-                               onChange={(namespaceId) => set({ namespaceId })} />
+            <SearchableSelect id="tpl-namespace" disabled={readOnly} value={draft.namespaceId == null ? null : String(draft.namespaceId)}
+                              options={namespaces.map((n) => ({ value: String(n.id), label: n.name, hint: n.module_names.join(", ") }))}
+                              placeholder="Select a namespace" searchPlaceholder="Search namespaces" emptyText="No namespace found."
+                              onChange={(namespaceId) => set({ namespaceId: Number(namespaceId) })} />
           </div>
           <div className="space-y-1" aria-label="Namespace modules and scopes">
             <Label>Applies to</Label>

@@ -30,7 +30,7 @@ describe("VariablesEditor", () => {
     for (const [header, help] of [
       ["Name", /How the body refers to the variable/],
       ["Type", /How the value is entered and checked/],
-      ["Required", /a value \(or a default\) is needed/],
+      ["Required", /a value is needed/],
       ["Options", /Enum only/],
     ] as const) {
       fireEvent.focus(screen.getByText(header, { selector: "span.cursor-help" }));

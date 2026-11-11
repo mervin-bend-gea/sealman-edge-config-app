@@ -10,22 +10,12 @@ import { cn } from "@/lib/utils";
 import { withPermissionRequiredTooltip } from "@/features/authorization/permissions/withPermissionRequiredTooltip";
 import { PERMISSION_KEYS } from "@/features/authorization/permissions/permission-keys";
 import { useReapplyRevision, useRevision, useRevisions, type Revision } from "@/features/ModuleConfigTemplates/api";
-import { formatDate, versionLabel } from "@/features/ModuleConfigTemplates/utils";
+import Box from "@/features/ModuleConfigTemplates/Box";
+import JsonEditor from "@/components/Input/JsonEditor";
+import { formatDate, sourceLabel, versionLabel } from "@/features/ModuleConfigTemplates/utils";
 import RevisionChange from "./RevisionChange";
 
 const GuardedButton = withPermissionRequiredTooltip(Button);
-
-const SOURCE_LABEL: Record<string, string> = {
-  template: "template",
-  raw: "raw edit",
-  "legacy-api": "legacy API",
-  external: "external",
-  reapply: "re-applied",
-};
-
-function sourceLabel(source: string) {
-  return SOURCE_LABEL[source] ?? source.replace(/^extension:/, "extension ");
-}
 
 export default function ModuleConfigHistory({ deviceId, moduleName, blocked, onUseValues }: {
   deviceId: string;
@@ -57,52 +47,58 @@ export default function ModuleConfigHistory({ deviceId, moduleName, blocked, onU
   }
 
   return (
-    <div className="flex h-full flex-col gap-3">
-      <Segmented
-        label="History view"
-        value={mode}
-        onChange={setMode}
-        options={[{ id: "revisions", label: "Revisions" }, { id: "changelog", label: "Changelog" }]}
-      />
-      {mode === "changelog" ? (
-        <Changelog deviceId={deviceId} moduleName={moduleName} revisions={list} />
-      ) : (
-    <div className="grid min-h-0 flex-1 content-start gap-4 overflow-auto xl:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
-      <div className="max-h-[60vh] min-h-48 overflow-auto rounded-lg border bg-card">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>#</TableHead>
-              <TableHead>When</TableHead>
-              <TableHead>Source</TableHead>
-              <TableHead>Template</TableHead>
-              <TableHead>By</TableHead>
-              <TableHead>Comment</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {list.map((r) => (
-              <TableRow key={r.id} className={cn("cursor-pointer", r.id === selectedId && "bg-muted")} onClick={() => setSelected(r.id)}>
-                <TableCell className="font-mono text-xs">
-                  {r.id} {r.current && <Badge className="ml-1">current</Badge>}
-                </TableCell>
-                <TableCell className="whitespace-nowrap text-xs">{formatDate(r.created_at)}</TableCell>
-                <TableCell><Badge variant="outline">{sourceLabel(r.source)}</Badge></TableCell>
-                <TableCell className="text-xs">{r.template_name ? `${r.template_name} ${versionLabel(r.template_version_tag, r.template_version)}` : "-"}</TableCell>
-                <TableCell className="text-xs">{r.actor ?? "-"}</TableCell>
-                <TableCell className="max-w-48 truncate text-xs text-muted-foreground">{r.comment ?? ""}</TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </div>
-      {selectedId !== undefined && (
+    <>
+      <Box
+        label="History"
+        title="History"
+        description="Every configuration written to this module, newest first."
+        actions={(
+          <Segmented
+            label="History view"
+            value={mode}
+            onChange={setMode}
+            options={[{ id: "revisions", label: "Revisions" }, { id: "changelog", label: "Changelog" }]}
+          />
+        )}
+      >
+        {mode === "changelog" ? (
+          <Changelog deviceId={deviceId} moduleName={moduleName} revisions={list} />
+        ) : (
+          <div className="max-h-[40vh] min-h-32 overflow-auto rounded-md border">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>#</TableHead>
+                  <TableHead>When</TableHead>
+                  <TableHead>Source</TableHead>
+                  <TableHead>Template</TableHead>
+                  <TableHead>By</TableHead>
+                  <TableHead>Comment</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {list.map((r) => (
+                  <TableRow key={r.id} className={cn("cursor-pointer", r.id === selectedId && "bg-muted")} onClick={() => setSelected(r.id)}>
+                    <TableCell className="font-mono text-xs">
+                      {r.id} {r.current && <Badge className="ml-1">current</Badge>}
+                    </TableCell>
+                    <TableCell className="whitespace-nowrap text-xs">{formatDate(r.created_at)}</TableCell>
+                    <TableCell><Badge variant="outline">{sourceLabel(r.source)}</Badge></TableCell>
+                    <TableCell className="text-xs">{r.template_name ? `${r.template_name} ${versionLabel(r.template_version_tag, r.template_version)}` : "-"}</TableCell>
+                    <TableCell className="text-xs">{r.actor ?? "-"}</TableCell>
+                    <TableCell className="max-w-64 truncate text-xs text-muted-foreground">{r.comment ?? ""}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        )}
+      </Box>
+      {mode === "revisions" && selectedId !== undefined && (
         <RevisionDetailView key={selectedId} deviceId={deviceId} moduleName={moduleName} id={selectedId} blocked={blocked}
                             onUseValues={onUseValues} />
       )}
-    </div>
-      )}
-    </div>
+    </>
   );
 }
 
@@ -128,7 +124,7 @@ function Segmented<T extends string>({ label, value, onChange, options }: {
 function Changelog({ deviceId, moduleName, revisions }: { deviceId: string; moduleName: string; revisions: Revision[] }) {
   const [shown, setShown] = useState(10);
   return (
-    <div className="min-h-0 flex-1 space-y-3 overflow-auto">
+    <div className="space-y-3">
       {revisions.slice(0, shown).map((r) => (
         <article key={r.id} className="space-y-2 rounded-lg border bg-card p-3" aria-label={`Revision ${r.id}`}>
           <header className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
@@ -175,9 +171,9 @@ function RevisionDetailView({ deviceId, moduleName, id, blocked, onUseValues }: 
     });
 
   return (
-    <div className="space-y-3 rounded-lg border bg-card p-3">
+    <section aria-label={`Revision ${revision.id}`} className="w-full space-y-4 rounded-lg border bg-card p-5">
       <div className="flex flex-wrap items-center gap-2">
-        <h4 className="mr-auto font-medium">Revision {revision.id}</h4>
+        <h2 className="mr-auto text-lg font-semibold">Revision {revision.id}</h2>
         {fromTemplate && revision.template_version != null && (
           <Button variant="outline" size="sm" onClick={() => onUseValues(revision)}>Edit values</Button>
         )}
@@ -220,10 +216,10 @@ function RevisionDetailView({ deviceId, moduleName, id, blocked, onUseValues }: 
       {revision.content === undefined || revision.content === null ? (
         <InlineAlert variant="warning">The content of this revision is no longer available.</InlineAlert>
       ) : (
-        <pre className="max-h-[45vh] overflow-auto rounded-md bg-muted p-3 text-xs">{JSON.stringify(revision.content, null, 2)}</pre>
+        <JsonEditor label="Revision content" value={JSON.stringify(revision.content, null, 2)} readOnly className="h-[45vh]" />
       )}
         </>
       )}
-    </div>
+    </section>
   );
 }

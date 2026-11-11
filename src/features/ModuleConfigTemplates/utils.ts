@@ -2,6 +2,12 @@ import { useEffect, useState } from "react";
 import type { JsonEditorAnnotation, JsonEditorMarker } from "@/components/Input/JsonEditor";
 import type { ExampleDevice, VariableDecl, VariableType } from "./api";
 
+/**
+ * Height of an editor the user works in: the viewport below the page header (never less than ~28 lines, never more
+ * than ~60), so long configurations need little scrolling and everything else sits below it.
+ */
+export const EDITOR_HEIGHT = "h-[clamp(28rem,calc(100vh_-_14rem),64rem)]";
+
 export const TEMPLATES_PATH = "/module-templates";
 
 export const namespaceEditPath = (namespaceId: number) => `${TEMPLATES_PATH}/${namespaceId}/edit`;
@@ -58,7 +64,6 @@ export function useDebounced<T>(value: T, delay = 400): T {
 export function cleanVariables(variables: VariableDecl[]): VariableDecl[] {
   return variables.map((v) => {
     const out: VariableDecl = { name: v.name.trim(), type: v.type, required: v.required !== false };
-    if (v.default != null) out.default = v.default;
     if (v.type === "enum" && v.options?.length) out.options = v.options;
     if (v.label) out.label = v.label;
     if (v.description) out.description = v.description;
@@ -85,6 +90,17 @@ export function canonical(value: unknown): string {
       ? Object.fromEntries(Object.entries(v as Record<string, unknown>).sort(([a], [b]) => a.localeCompare(b)))
       : v);
 }
+
+const SOURCE_LABEL: Record<string, string> = {
+  template: "template",
+  raw: "raw edit",
+  "legacy-api": "legacy API",
+  external: "external",
+  reapply: "re-applied",
+};
+
+/** What wrote a revision, for people. */
+export const sourceLabel = (source: string) => SOURCE_LABEL[source] ?? source.replace(/^extension:/, "extension ");
 
 /** How people see a version: its tag (or "v<number>" where only the number is known). */
 export const versionLabel = (tag?: string | null, version?: number | null) =>

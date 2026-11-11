@@ -97,6 +97,27 @@ describe("ExtensionOutlet", () => {
     expect(screen.getByText("built-in view")).toBeTruthy();
   });
 
+  it("replace:page renders only the first matching extension, without the card, and falls back to the built-in page", async () => {
+    contributionsMock.mockReturnValue({
+      contributions: [
+        { ...c, extension: "a", label: "A", target: "module", placement: "replace:page" },
+        { ...c, extension: "b", label: "B", target: "module", placement: "replace:page" },
+      ],
+      isLoading: false,
+    });
+    const { container } = setup({ target: "module", placement: "replace:page", fallback: <p>built-in page</p> });
+    expect(await screen.findByText("panel body")).toBeTruthy();
+    expect(container.querySelectorAll("h3")).toHaveLength(0);
+    expect(screen.queryByText("built-in page")).toBeNull();
+    expect(contributionsMock).toHaveBeenCalledWith("module", "replace:page", expect.anything());
+
+    loadMock.mockRejectedValue(new Error("Timed out"));
+    vi.spyOn(console, "error").mockImplementation(() => {});
+    resetExtensionPanelCache();
+    setup({ target: "module", placement: "replace:page", fallback: <p>built-in page</p> });
+    expect(await screen.findByText("A unavailable, showing the built-in view")).toBeTruthy();
+  });
+
   it("loads the panel once and does not re-suspend in a loop", async () => {
     // A real async loader: each call returns a fresh pending promise, as loadRemote does.
     loadMock.mockImplementation(() => new Promise((resolve) => setTimeout(() => resolve(Panel), 5)));

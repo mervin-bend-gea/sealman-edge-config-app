@@ -10,7 +10,7 @@ export const contributionPath = (c: Contribution) =>
 
 /** Nav entries for the tabs or pages extensions contribute; `to` is relative for tabs, absolute for pages. */
 export function useNavContributions(
-  target: "device" | "global",
+  target: "device" | "global" | "module",
   placement: "tab" | "page",
   context?: object
 ): Array<{ label: string; to: string }> {

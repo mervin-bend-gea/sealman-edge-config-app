@@ -40,8 +40,7 @@ export function FindingsList({ findings, className }: { findings: Finding[]; cla
 }
 
 function fieldLabel(decl: VariableDecl) {
-  const optional = decl.required === false || decl.default != null;
-  return `${decl.label || decl.name}${optional ? "" : " *"}`;
+  return `${decl.label || decl.name}${decl.required === false ? "" : " *"}`;
 }
 
 /** Input form generated from a template's variable declarations. */
@@ -73,7 +72,7 @@ export function VariableForm({
         const id = `var-${decl.name}`;
         const error = findings.find((f) => f.path === `/values/${decl.name}` && f.level === "error");
         const current = values[decl.name];
-        const placeholder = decl.default != null ? `default: ${String(decl.default)}` : decl.required === false ? "optional" : "";
+        const placeholder = decl.required === false ? "optional" : "";
         const choices: Scalar[] | null = decl.type === "boolean" ? [true, false] : decl.type === "enum" ? decl.options ?? [] : null;
         return (
           <div key={decl.name} className="space-y-1">
@@ -133,16 +132,15 @@ function parseScalar(text: string, type: VariableType): Scalar | null {
   return text;
 }
 
-const COLUMNS = "md:grid-cols-[minmax(8rem,1.2fr)_7.5rem_minmax(8rem,1fr)_minmax(8rem,1fr)_minmax(8rem,1fr)_minmax(10rem,1.6fr)_5.5rem_2.25rem]";
+const COLUMNS = "md:grid-cols-[minmax(8rem,1.2fr)_7.5rem_minmax(8rem,1fr)_minmax(8rem,1fr)_minmax(10rem,1.6fr)_5.5rem_2.25rem]";
 
 const COLUMN_HELP = {
   name: "How the body refers to the variable: ${name}. Letters, digits and _, not starting with a digit.",
   type: "How the value is entered and checked. String: one line. Text: several lines. Number, Integer, Boolean. Enum: one of the options.",
   label: "Caption above the input when the template is applied. The name is used if empty.",
-  default: "Used when nobody enters a value. A required variable without a default must be filled in.",
   options: "Enum only: the allowed values, separated by commas.",
   description: "Help text shown under the input.",
-  required: "Checked: a value (or a default) is needed to apply the template. Unchecked: without a value the key is left out of the configuration.",
+  required: "Checked: a value is needed to apply the template. Unchecked: without a value the key is left out of the configuration.",
 } as const;
 
 function ColumnHeader({ label, help, className }: { label: string; help: string; className?: string }) {
@@ -203,7 +201,6 @@ export function VariablesEditor({
             <ColumnHeader label="Name" help={COLUMN_HELP.name} />
             <ColumnHeader label="Type" help={COLUMN_HELP.type} />
             <ColumnHeader label="Label" help={COLUMN_HELP.label} />
-            <ColumnHeader label="Default" help={COLUMN_HELP.default} />
             <ColumnHeader label="Options" help={COLUMN_HELP.options} />
             <ColumnHeader label="Description" help={COLUMN_HELP.description} />
             <ColumnHeader label="Required" help={COLUMN_HELP.required} className="justify-self-center" />
@@ -223,8 +220,6 @@ export function VariablesEditor({
             </Select>
             <Input aria-label="Variable label" disabled={disabled} value={v.label ?? ""} placeholder="label"
                    onChange={(e) => update(i, { label: e.target.value || null })} />
-            <Input aria-label="Variable default" disabled={disabled} value={v.default == null ? "" : String(v.default)}
-                   placeholder="default" onChange={(e) => update(i, { default: parseScalar(e.target.value, v.type) })} />
             <OptionsInput key={v.type === "enum" ? "enum" : "other"} options={v.options} disabled={disabled || v.type !== "enum"}
                           invalid={invalid(i, "options")} onChange={(options) => update(i, { options })} />
             <Input aria-label="Variable description" disabled={disabled} value={v.description ?? ""} placeholder="description"

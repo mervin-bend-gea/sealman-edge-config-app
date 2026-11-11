@@ -10,7 +10,6 @@ export interface VariableDecl {
   name: string;
   type: VariableType;
   required?: boolean;
-  default?: Scalar | null;
   options?: Scalar[] | null;
   label?: string | null;
   description?: string | null;

@@ -23,7 +23,7 @@ const SUMMARIES = [
   { template_id: 1, version: 2, tag: "2.0", created_by: "alice", created_at: "2026-11-09T11:00:00Z", comment: "faster" },
   { template_id: 1, version: 1, tag: "1.0", created_by: "bob", created_at: "2026-11-09T10:00:00Z", comment: "first" },
 ];
-const VARIABLES = [{ name: "interval", type: "integer", required: true, default: 60 }];
+const VARIABLES = [{ name: "interval", type: "integer", required: true }];
 const version = (n: number) => ({ ...SUMMARIES[2 - n], body: { interval: n === 1 ? 60 : 5 }, variables: VARIABLES, references: { variables: [], device: [] } });
 
 const renderAt = (path: string) =>
@@ -108,7 +108,7 @@ describe("TemplatePage", () => {
     expect(save).toBeDisabled();
     expect(screen.getByText("No changes to save.")).toBeInTheDocument();
 
-    fireEvent.change(screen.getByLabelText("Variable default"), { target: { value: "30" } });
+    fireEvent.change(screen.getByLabelText("Variable label"), { target: { value: "Interval" } });
     const newVersion = await screen.findByRole("button", { name: "Save new version" });
     expect(screen.getByLabelText("Version tag")).toHaveValue("v3");
     fireEvent.change(screen.getByLabelText("Version tag"), { target: { value: "1.0" } });
