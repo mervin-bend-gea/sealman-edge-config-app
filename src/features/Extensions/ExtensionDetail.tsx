@@ -211,6 +211,17 @@ function ExtensionDetailContent({ canRegister, canDeregister }: { canRegister: b
         </div>
       </div>
 
+      <dl className="grid gap-3 text-sm sm:grid-cols-2">
+        <div>
+          <dt className="text-muted-foreground">Internal key issued</dt>
+          <dd>{extension.internal_key_created_at ? <time dateTime={extension.internal_key_created_at}>{new Date(extension.internal_key_created_at).toLocaleString()}</time> : "Not available"}</dd>
+        </div>
+        <div>
+          <dt className="text-muted-foreground">Internal key last rotated</dt>
+          <dd>{extension.internal_key_rotated_at ? <time dateTime={extension.internal_key_rotated_at}>{new Date(extension.internal_key_rotated_at).toLocaleString()}</time> : "Never rotated"}</dd>
+        </div>
+      </dl>
+
       <div className="space-y-2">
         <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Upstreams</h3>
         <div className="border rounded-lg overflow-hidden bg-card">

@@ -1,0 +1,269 @@
+@import 'tailwindcss';
+
+@plugin '@tailwindcss/forms';
+@plugin 'tailwindcss-animate';
+
+@custom-variant dark (&:is(.dark *));
+
+@theme {
+  --breakpoint-3xl: 1920px;
+
+  --color-vibrant-blue: #0303b8;
+  --color-white: #ffffff;
+  --color-light-gray: #E6E6E6;
+  --color-mid-gray: #cccccc;
+  --color-dark-gray: #646464;
+  --color-night-blue: #000f41;
+  --color-active-blue: #1f9dff;
+  --color-active-green: #1aff80;
+  --color-energetic-pink: #ff80ff;
+  --color-background: hsl(var(--background));
+  --color-foreground: hsl(var(--foreground));
+
+  --color-card: hsl(var(--card));
+  --color-card-foreground: hsl(var(--card-foreground));
+
+  --color-popover: hsl(var(--popover));
+  --color-popover-foreground: hsl(var(--popover-foreground));
+
+  --color-primary: hsl(var(--primary));
+  --color-primary-foreground: hsl(var(--primary-foreground));
+
+  --color-secondary: hsl(var(--secondary));
+  --color-secondary-foreground: hsl(var(--secondary-foreground));
+
+  --color-muted: hsl(var(--muted));
+  --color-muted-foreground: hsl(var(--muted-foreground));
+
+  --color-accent: hsl(var(--accent));
+  --color-accent-foreground: hsl(var(--accent-foreground));
+
+  --color-destructive: hsl(var(--destructive));
+  --color-destructive-foreground: hsl(var(--destructive-foreground));
+
+  --color-border: hsl(var(--border));
+  --color-input: hsl(var(--input));
+  --color-ring: hsl(var(--ring));
+
+  --color-chart-1: hsl(var(--chart-1));
+  --color-chart-2: hsl(var(--chart-2));
+  --color-chart-3: hsl(var(--chart-3));
+  --color-chart-4: hsl(var(--chart-4));
+  --color-chart-5: hsl(var(--chart-5));
+
+  --radius-lg: var(--radius);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-sm: calc(var(--radius) - 4px);
+
+  --animate-accordion-down: accordion-down 0.2s ease-out;
+  --animate-accordion-up: accordion-up 0.2s ease-out;
+  --animate-sweep: sweep 5s ease-in-out infinite;
+  --animate-breathe: breathe 3s ease-in-out infinite;
+  --animate-search-highlight: search-highlight 1.2s ease-in-out 3;
+
+  @keyframes sweep {
+    0% {
+      transform: translateX(-120%);
+    }
+    60%,
+    100% {
+      transform: translateX(420%);
+    }
+  }
+  @keyframes breathe {
+    0%,
+    100% {
+      opacity: 0.35;
+    }
+    50% {
+      opacity: 1;
+    }
+  }
+
+  @keyframes search-highlight {
+    0%,
+    100% {
+      background-color: transparent;
+      box-shadow: inset 0 0 0 0 transparent;
+    }
+    50% {
+      background-color: rgb(219 234 254);
+      box-shadow: inset 0 0 0 2px rgb(59 130 246);
+    }
+  }
+
+  @keyframes accordion-down {
+    from {
+      height: 0;
+    }
+    to {
+      height: var(--radix-accordion-content-height);
+    }
+  }
+  @keyframes accordion-up {
+    from {
+      height: var(--radix-accordion-content-height);
+    }
+    to {
+      height: 0;
+    }
+  }
+}
+
+/*
+  The default border color has changed to `currentcolor` in Tailwind CSS v4,
+  so we've added these compatibility styles to make sure everything still
+  looks the same as it did with Tailwind CSS v3.
+
+  If we ever want to remove these styles, we need to add an explicit border
+  color utility to any element that depends on these defaults.
+*/
+@layer base {
+  *,
+  ::after,
+  ::before,
+  ::backdrop,
+  ::file-selector-button {
+    border-color: var(--color-gray-200, currentcolor);
+  }
+
+  button,
+  [role="button"] {
+    cursor: pointer;
+  }
+}
+
+@layer utilities {
+  .leaflet-container {
+    height: max(420px, calc(100vh - 19rem));
+    z-index: 0;
+  }
+
+  .z-index-above-map {
+    z-index: 1001;
+  }
+}
+
+/* Notifications: brand-consistent look for react-toastify */
+.Toastify {
+  --toastify-color-success: #16a34a;
+  --toastify-color-error: #dc2626;
+  --toastify-color-warning: #d97706;
+  --toastify-color-info: #0303b8;
+  --toastify-font-family: inherit;
+  --toastify-toast-width: 380px;
+}
+.Toastify .Toastify__toast-container--top-right {
+  top: 4.5rem;
+}
+.Toastify .Toastify__toast {
+  align-items: flex-start;
+  padding: 0.75rem 1rem;
+  border: 1px solid hsl(var(--border));
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  color: hsl(var(--foreground));
+  box-shadow: 0 10px 30px -12px rgb(15 31 71 / 0.35);
+}
+.Toastify .Toastify__toast-body {
+  padding: 0;
+  align-items: flex-start;
+}
+.Toastify .Toastify__progress-bar {
+  height: 3px;
+}
+  
+  @layer base {
+  :root {
+        --background: 0 0% 100%;
+        --foreground: 222 47% 11%;
+        --card: 0 0% 100%;
+        --card-foreground: 222 47% 11%;
+        --popover: 0 0% 100%;
+        --popover-foreground: 222 47% 11%;
+        --primary: 240 97% 37%;
+        --primary-foreground: 0 0% 100%;
+        --secondary: 214 32% 95%;
+        --secondary-foreground: 225 100% 13%;
+        --muted: 210 40% 96%;
+        --muted-foreground: 215 16% 47%;
+        --accent: 214 100% 97%;
+        --accent-foreground: 225 100% 13%;
+        --destructive: 0 72% 51%;
+        --destructive-foreground: 0 0% 98%;
+        --border: 214 32% 91%;
+        --input: 214 32% 86%;
+        --ring: 240 97% 37%;
+        --chart-1: 12 76% 61%;
+        --chart-2: 173 58% 39%;
+        --chart-3: 197 37% 24%;
+        --chart-4: 43 74% 66%;
+        --chart-5: 27 87% 67%;
+        --radius: 0.5rem;
+    }
+  .dark {
+        --background: 0 0% 3.9%;
+        --foreground: 0 0% 98%;
+        --card: 0 0% 3.9%;
+        --card-foreground: 0 0% 98%;
+        --popover: 0 0% 3.9%;
+        --popover-foreground: 0 0% 98%;
+        --primary: 0 0% 98%;
+        --primary-foreground: 0 0% 9%;
+        --secondary: 0 0% 14.9%;
+        --secondary-foreground: 0 0% 98%;
+        --muted: 0 0% 14.9%;
+        --muted-foreground: 0 0% 63.9%;
+        --accent: 0 0% 14.9%;
+        --accent-foreground: 0 0% 98%;
+        --destructive: 0 62.8% 30.6%;
+        --destructive-foreground: 0 0% 98%;
+        --border: 0 0% 14.9%;
+        --input: 0 0% 14.9%;
+        --ring: 0 0% 83.1%;
+        --chart-1: 220 70% 50%;
+        --chart-2: 160 60% 45%;
+        --chart-3: 30 80% 55%;
+        --chart-4: 280 65% 60%;
+        --chart-5: 340 75% 55%;
+    }
+}
+  
+  @layer base {
+  * {
+    @apply border-border;
+    }
+  body {
+    @apply bg-background text-foreground;
+    }
+}
+  
+  
+  
+  @layer base {
+  * {
+    @apply border-border outline-ring/50;
+    }
+  body {
+    @apply bg-background text-foreground;
+    }
+}
+
+/* Water loader: the level sways while two waves roll across the glass */
+@keyframes wl-wave {
+  from { transform: translateX(0); }
+  to { transform: translateX(-40px); }
+}
+@keyframes wl-level {
+  from { transform: translateY(-5px); }
+  to { transform: translateY(6px); }
+}
+.water-loader .wl-level { animation: wl-level 2.4s ease-in-out infinite alternate; }
+.water-loader .wl-wave-front { animation: wl-wave 1.5s linear infinite; }
+.water-loader .wl-wave-back { animation: wl-wave 2.6s linear infinite reverse; }
+@media (prefers-reduced-motion: reduce) {
+  .water-loader .wl-level,
+  .water-loader .wl-wave-front,
+  .water-loader .wl-wave-back { animation: none; }
+}

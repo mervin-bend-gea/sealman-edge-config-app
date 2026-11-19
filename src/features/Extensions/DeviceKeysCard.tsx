@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { ErrorState, LoadingState } from "@/components/ui/page-state";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -26,8 +27,10 @@ function DeviceKeysContent({ name, canManage }: { name: string; canManage: boole
   const revoke = useRevokeExtensionDeviceKey();
   const [deviceId, setDeviceId] = useState("");
   const [moduleId, setModuleId] = useState("");
+  const [label, setLabel] = useState("");
+  const [description, setDescription] = useState("");
   const [issuedKey, setIssuedKey] = useState<string | null>(null);
-  const [revokeTarget, setRevokeTarget] = useState<string | null>(null);
+  const [revokeTarget, setRevokeTarget] = useState<{ id: string; device_id: string } | null>(null);
   const [error, setError] = useState<string | null>(null);
   const busy = issue.isPending || revoke.isPending;
 
@@ -38,11 +41,18 @@ function DeviceKeysContent({ name, canManage }: { name: string; canManage: boole
     try {
       const result = await issue.mutateAsync({
         params: { path: { name } },
-        body: { device_id: deviceId.trim(), module_id: moduleId.trim() || undefined },
+        body: {
+          device_id: deviceId.trim(),
+          module_id: moduleId.trim() || undefined,
+          label: label.trim() || undefined,
+          description: description.trim() || undefined,
+        },
       });
       setIssuedKey(result.device_key);
       setDeviceId("");
       setModuleId("");
+      setLabel("");
+      setDescription("");
     } catch (cause) {
       setError(extensionErrorMessages(cause, "Could not issue device key").join("; "));
     } finally {
@@ -55,7 +65,7 @@ function DeviceKeysContent({ name, canManage }: { name: string; canManage: boole
     if (!revokeTarget) return;
     setError(null);
     try {
-      await revoke.mutateAsync({ params: { path: { name, device_id: revokeTarget } } });
+      await revoke.mutateAsync({ params: { path: { name, key_id: revokeTarget.id } } });
       setRevokeTarget(null);
     } catch (cause) {
       setError(extensionErrorMessages(cause, "Could not revoke device key").join("; "));
@@ -68,7 +78,7 @@ function DeviceKeysContent({ name, canManage }: { name: string; canManage: boole
       <CardContent className="space-y-4">
         <p className="text-sm text-muted-foreground">
           Device routes authenticate with <code>X-Device-Key</code> on the field-ingress API.
-          Issuing another key for a device immediately replaces its previous key.
+          Only one key is active per device. Issuing another immediately revokes the previous key, which remains in the history below.
           Module ID is optional metadata, not an additional authentication restriction.
         </p>
         {canManage && (
@@ -81,6 +91,14 @@ function DeviceKeysContent({ name, canManage }: { name: string; canManage: boole
               <Label htmlFor="extension-module-id">Module ID (optional)</Label>
               <Input id="extension-module-id" value={moduleId} maxLength={128} onChange={(event) => setModuleId(event.target.value)} />
             </div>
+            <div className="space-y-1">
+              <Label htmlFor="extension-key-label">Label (optional)</Label>
+              <Input id="extension-key-label" value={label} onChange={(event) => setLabel(event.target.value)} />
+            </div>
+            <div className="space-y-1">
+              <Label htmlFor="extension-key-description">Description (optional)</Label>
+              <Textarea id="extension-key-description" value={description} onChange={(event) => setDescription(event.target.value)} />
+            </div>
             <Button type="button" disabled={busy || !deviceId.trim()} onClick={() => { void issueKey(); }}>
               {issue.isPending ? "Issuing..." : "Issue key"}
             </Button>
@@ -91,14 +109,19 @@ function DeviceKeysContent({ name, canManage }: { name: string; canManage: boole
           <ErrorState title={isForbidden(keys.error) ? "Not permitted" : "Could not load device keys"} message={getErrorMessage(keys.error)} onRetry={() => { void keys.refetch(); }} />
         ) : keys.isPending ? <LoadingState label="Loading device keys..." /> : keys.data?.length ? (
           <Table>
-            <TableHeader><TableRow><TableHead>Device</TableHead><TableHead>Module</TableHead><TableHead>Issued</TableHead><TableHead /></TableRow></TableHeader>
+            <TableHeader><TableRow><TableHead>Key ID</TableHead><TableHead>Device</TableHead><TableHead>Module</TableHead><TableHead>Label</TableHead><TableHead>Description</TableHead><TableHead>Status</TableHead><TableHead>Issued</TableHead><TableHead>Revoked</TableHead><TableHead /></TableRow></TableHeader>
             <TableBody>
               {keys.data.map((key) => (
-                <TableRow key={key.device_id}>
+                <TableRow key={key.id}>
+                  <TableCell className="font-mono text-xs">{key.id}</TableCell>
                   <TableCell>{key.device_id}</TableCell>
                   <TableCell>{key.module_id ?? "-"}</TableCell>
+                  <TableCell>{key.label ?? "-"}</TableCell>
+                  <TableCell>{key.description ?? "-"}</TableCell>
+                  <TableCell>{key.revoked_at ? "Revoked" : "Active"}</TableCell>
                   <TableCell>{key.created_at ? new Date(key.created_at).toLocaleString() : "-"}</TableCell>
-                  <TableCell>{canManage && <Button type="button" variant="destructive" size="sm" disabled={busy} onClick={() => setRevokeTarget(key.device_id)}>Revoke</Button>}</TableCell>
+                  <TableCell>{key.revoked_at ? new Date(key.revoked_at).toLocaleString() : "-"}</TableCell>
+                  <TableCell>{canManage && !key.revoked_at && <Button type="button" variant="destructive" size="sm" disabled={busy} onClick={() => setRevokeTarget(key)}>Revoke</Button>}</TableCell>
                 </TableRow>
               ))}
             </TableBody>
@@ -110,7 +133,7 @@ function DeviceKeysContent({ name, canManage }: { name: string; canManage: boole
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Revoke device key?</AlertDialogTitle>
-            <AlertDialogDescription>Device {revokeTarget} will no longer be able to call this extension&apos;s device routes with its current key.</AlertDialogDescription>
+            <AlertDialogDescription>Revoke key {revokeTarget?.id} for device {revokeTarget?.device_id}? This key will no longer be able to call this extension&apos;s device routes.</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>

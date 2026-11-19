@@ -87,11 +87,13 @@ sequenceDiagram
 | `global` / `page` | Own page `/x/<extension>/<path>` + side nav entry | `user`, `subPath` |
 | `device` / `tab` | Device tab `/devices/<id>/x/<extension>/<path>` | `user`, `deviceId`, `deviceTypeId`, `canEdit`, `subPath` |
 | `endpoint` / `section` | Endpoint details page, as a card | device fields + `endpointId`, `endpointTypeId` |
-| `module` / `replace:config` | Module dialog, **instead of** the built-in config view | device fields + `moduleId`, `moduleType`, `moduleVersion` |
+| `module` / `tab` | A tab appended to the module page's tab bar, `/devices/<id>/applications/<module>/x/<extension>/<path>` | device fields + `moduleId`, `moduleType`, `moduleVersion`, `subPath` |
+| `module` / `replace:config` | The module page's **Configuration** tab, instead of the built-in template view (the Raw JSON, History, Methods, Reported and Logs tabs stay) | device fields + `moduleId`, `moduleType`, `moduleVersion` |
+| `module` / `replace:page` | **Everything** of the module page below its header (tab bar and all tabs, built-in and appended), instead of the built-in page | device fields + `moduleId`, `moduleType`, `moduleVersion` |
 
 - `user` is `{ id, name }`. `canEdit` reflects the user's edit permission in that place. Use it to show or hide editing; the API still checks every request.
 - `subPath`: the rest of the URL after your page or tab path, for your own sub-routes.
-- `replace:config`: only the first matching contribution is used. If it fails to load, the built-in view is shown with a short note. Core rejects two enabled extensions replacing the same spot.
+- `replace:*`: only the first matching contribution is used. If it fails to load, the built-in view is shown with a short note. Core rejects two enabled extensions replacing the same spot. The page header (module name, status badges, the application's message) always stays, so users see which module and state they are looking at. `replace:page` takes precedence over `replace:config`, which is not rendered then.
 
 ## 6. The panel contract
 

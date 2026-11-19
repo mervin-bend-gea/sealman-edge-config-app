@@ -3,7 +3,6 @@ import { edgeConfigApiHooks } from "@/api/edgeConfig/edgeConfigApiHooks";
 import { PencilSquareIcon, TrashIcon } from "@heroicons/react/24/outline";
 import { Button } from "@/components/ui/button";
 import { ErrorState, LoadingState } from "@/components/ui/page-state";
-import PageTitle from "@/components/Typography/PageTitle";
 import { getErrorMessage } from "@/lib/errors";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import {
@@ -124,18 +123,16 @@ export default function Roles() {
   }
 
   return (
-    <div className="h-full min-h-0 flex flex-col gap-6">
-      <div className="flex items-center justify-between gap-3">
-        <PageTitle title="Roles" description="Bundles of permissions that can be assigned to teams." />
+    <div className="h-full min-h-0 flex flex-col">
+      <div className="bg-card border rounded-lg p-4 flex-1 min-h-0 flex flex-col gap-3">
         {canWrite && (
-          <Button type="button" onClick={handleCreateRole}>
-            New role
-          </Button>
+          <div className="flex justify-end">
+            <Button type="button" onClick={handleCreateRole}>
+              New role
+            </Button>
+          </div>
         )}
-      </div>
-
-      <div className="bg-card border rounded-lg p-4 flex-1 min-h-0 flex flex-col">
-        <div className="h-full min-h-0 overflow-y-auto border rounded-md">
+        <div className="flex-1 min-h-0 overflow-y-auto border rounded-md">
           <Table className="w-full text-sm border-collapse">
             <THead className="bg-background sticky top-0 z-20 shadow-xs">
               {table.getHeaderGroups().map((headerGroup) => (

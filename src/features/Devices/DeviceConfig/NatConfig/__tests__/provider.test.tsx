@@ -98,20 +98,17 @@ describe("Device NAT Config Provider", () => {
     expect(await findByText("new_rule_name"))
   })
 
-  it("should toggle the nat enable flag", async () => {
+  it("should enable NAT when a rule is added and disable it when the last rule is deleted", async () => {
     const user = userEvent.setup()
-    useGetDeviceNatConfigMocked.mockReturnValueOnce({data: {nat_enabled: false, nat_rules: []}})
+    useGetDeviceNatConfigMocked.mockReturnValue({data: {nat_enabled: false, nat_rules: []}})
     const MyTestComponent = () => {
 
-      const { toggleNat, natConfig } = useContext(DeviceNatConfigRulesContext)
-
-      const handleClick = () => {
-        toggleNat()
-      }
+      const { addNatRule, deleteRule, natConfig } = useContext(DeviceNatConfigRulesContext)
 
       return (
         <>
-          <button onClick={handleClick}>ACTION</button>
+          <button onClick={() => addNatRule({ extIp: "1", intIp: "2", name: "test-rule" })}>Add rule</button>
+          <button onClick={() => deleteRule(0)}>Delete rule</button>
           {natConfig?.nat_enabled ? "ENABLED" : "DISABLED"}
         </>
       )
@@ -124,8 +121,11 @@ describe("Device NAT Config Provider", () => {
     )
 
     getByText("DISABLED")
-    await user.click(getByText("ACTION"))
+    await user.click(getByText("Add rule"))
     getByText("ENABLED")
+    await user.click(getByText("Delete rule"))
+    getByText("DISABLED")
+    useGetDeviceNatConfigMocked.mockRestore()
   })
 
   it("should update a specific rule",async () => {

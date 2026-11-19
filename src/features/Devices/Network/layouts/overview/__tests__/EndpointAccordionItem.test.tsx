@@ -4,6 +4,7 @@ import { Accordion } from "@/components/ui/accordion";
 import type { MappedEndpoint } from "@/generated/edge-administration/hooks/network/usePostNetworkOverview";
 import EndpointAccordionItem from "../EndpointAccordionItem";
 import { endpointListKey } from "../overviewMerge";
+import { ShowConnectionStateContext } from "../connectionStateContext";
 
 const { typesRef } = vi.hoisted(() => ({ typesRef: { current: [] as unknown[] } }));
 
@@ -104,5 +105,26 @@ describe("EndpointAccordionItem", () => {
       ports: [{ status: "unknown", source: "configured", service_id: "s7", type_label: "OPC UA", browser_kind: "opcua" }],
     });
     expect(screen.queryByRole("button", { name: "Browse" })).not.toBeInTheDocument();
+  });
+
+  it("shows no connection states and keeps Browse usable while the network scan is disabled", () => {
+    render(
+      <ShowConnectionStateContext.Provider value={false}>
+        <Accordion type="single" defaultValue="id:e9">
+          <EndpointAccordionItem
+            endpoint={{
+              endpoint_id: "e9", type_id: "sensor", type_label: "Sensor", ip: "10.0.0.9", status: "offline", source: "configured", endpoint_data: {},
+              ports: [{ port: 4840, status: "offline", source: "configured", service_id: "s9", type_label: "OPC UA", browser_kind: "opcua" }],
+            }}
+            deviceId="dev-1" onCreated={() => {}} onOpenDetails={() => {}} onOpenServiceDetails={() => {}}
+          />
+        </Accordion>
+      </ShowConnectionStateContext.Provider>
+    );
+    expect(screen.getByText("OPC UA")).toBeInTheDocument();
+    expect(screen.queryByText("Offline")).not.toBeInTheDocument();
+    expect(screen.queryByText("Status")).not.toBeInTheDocument();
+    expect(screen.queryByText("Last status change")).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Browse" })).toBeEnabled();
   });
 });

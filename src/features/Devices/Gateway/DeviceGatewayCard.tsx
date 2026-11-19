@@ -3,7 +3,6 @@ import { toast } from "react-toastify";
 import { Cpu, Pencil } from "lucide-react";
 import { WaterLoader } from "@/components/ui/water-loader";
 import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import Badge from "@/components/Typography/Badge";
 import { formatMetadataValue, validateFields } from "@/features/PlatformTypes/FieldValueInput";
 import TypeFieldsForm from "@/features/Devices/Network/layouts/overview/TypeFieldsForm";
@@ -12,7 +11,6 @@ import { withPermissionRequiredTooltip } from "@/features/authorization/permissi
 import { PERMISSION_KEYS } from "@/features/authorization/permissions/permission-keys";
 import useGetDeviceMetadata from "@/generated/edge-administration/hooks/device_metadata/useGetDeviceMetadata";
 import usePatchDeviceMetadata from "@/generated/edge-administration/hooks/device_metadata/usePatchDeviceMetadata";
-import usePatchDeviceType from "@/generated/edge-administration/hooks/device_metadata/usePatchDeviceType";
 import useGetDeviceTypes from "@/generated/edge-administration/hooks/device_types/useGetDeviceTypes";
 import { getErrorMessage } from "@/lib/errors";
 
@@ -21,17 +19,15 @@ const GuardedButton = withPermissionRequiredTooltip(Button);
 const isEmpty = (value: unknown) => value === null || value === undefined || value === "";
 
 /**
- * The device is the gateway the endpoints and services on the Assets tab hang off, so its type and
- * metadata are edited here, right above them.
+ * The device is the gateway the endpoints and services on the Assets tab hang off, so its type is
+ * displayed and its metadata edited here, right above them.
  */
 export default function DeviceGatewayCard({ deviceId }: { deviceId: string }) {
   const metadataQuery = useGetDeviceMetadata(deviceId);
   const typesQuery = useGetDeviceTypes();
   const { query: patchMetadata, isPending: isPatchingMetadata } = usePatchDeviceMetadata();
-  const { patchDeviceType, isPending: isRetyping } = usePatchDeviceType();
 
   const [editing, setEditing] = useState(false);
-  const [typeId, setTypeId] = useState("");
   // Only what the user changed; the stored values underneath stay untouched until saving.
   const [edits, setEdits] = useState<Record<string, unknown>>({});
   const [deletedKeys, setDeletedKeys] = useState<Set<string>>(new Set());
@@ -40,23 +36,20 @@ export default function DeviceGatewayCard({ deviceId }: { deviceId: string }) {
   const types = typesQuery.data ?? [];
   const defaultType = types.find((t) => t.type_id === "default");
   const currentType = types.find((t) => t.type_id === metadata?.typeId);
-  const isSaving = isPatchingMetadata || isRetyping;
+  const isSaving = isPatchingMetadata;
 
   const stored = Object.fromEntries(Object.entries(metadata?.deviceMetadata ?? {}).map(([key, entry]) => [key, entry.value]));
-  // The default type's fields apply to every device type; the selected type's own definitions win.
-  const fields = { ...(defaultType?.fields ?? {}), ...(types.find((t) => t.type_id === typeId)?.fields ?? {}) };
-  const typeChanged = typeId !== metadata?.typeId;
+  // The default type's fields apply to every device type; the current type's own definitions win.
+  const fields = { ...(defaultType?.fields ?? {}), ...(currentType?.fields ?? {}) };
 
   const merged: Record<string, unknown> = { ...stored, ...edits };
   for (const key of deletedKeys) delete merged[key];
-  // A retype pre-fills the new type's defaults, but never over a stored value.
   const formValues = Object.fromEntries(
-    Object.entries(fields).map(([key, field]) => [key, merged[key] ?? (typeChanged ? field.default : null) ?? null]),
+    Object.keys(fields).map((key) => [key, merged[key] ?? null]),
   );
   const customValues = Object.fromEntries(Object.entries(merged).filter(([key]) => !(key in fields)));
 
   const startEditing = () => {
-    setTypeId(metadata?.typeId ?? "");
     setEdits({});
     setDeletedKeys(new Set());
     setEditing(true);
@@ -100,8 +93,7 @@ export default function DeviceGatewayCard({ deviceId }: { deviceId: string }) {
     }
 
     try {
-      if (typeChanged) await patchDeviceType({ deviceId, body: { typeId, deviceMetadata: payload } });
-      else if (Object.keys(payload).length > 0) await patchMetadata({ deviceId, body: payload });
+      if (Object.keys(payload).length > 0) await patchMetadata({ deviceId, body: payload });
       toast.success("Gateway updated");
       setEditing(false);
     } catch (error) {
@@ -176,24 +168,8 @@ export default function DeviceGatewayCard({ deviceId }: { deviceId: string }) {
         {metadata && editing && (
           <div className="max-w-2xl space-y-6">
             <div className="space-y-1">
-              <label className="text-xs font-medium text-muted-foreground">Device Type *</label>
-              <Select value={typeId} onValueChange={setTypeId}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select a device type..." />
-                </SelectTrigger>
-                <SelectContent>
-                  {types.map((type) => (
-                    <SelectItem key={type.type_id} value={type.type_id}>
-                      {type.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              {typeChanged && (
-                <p className="text-xs text-muted-foreground">
-                  Stored values are kept: fields of the new type are pre-filled, everything else stays as custom fields.
-                </p>
-              )}
+              <p className="text-xs font-medium text-muted-foreground">Device Type</p>
+              <Badge>{currentType?.label ?? metadata.typeId}</Badge>
             </div>
 
             {Object.keys(fields).length > 0 && (

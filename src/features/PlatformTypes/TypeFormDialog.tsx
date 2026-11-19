@@ -48,6 +48,7 @@ interface TypeFormDialogProps {
   initial?: TypeRecord | null;
   singularLabel: string;
   isPending?: boolean;
+  canSave?: boolean;
   /** When set, shows a "Browse Action" dropdown letting this type be assigned one of these
    * built-in browsers (e.g. VNC, OPC-UA, plain HTTP) for its "Browse" button on the Overview page. */
   browserKindOptions?: BrowserKindOption[];
@@ -62,8 +63,8 @@ interface TypeFormDialogProps {
   defaultMapping?: Record<string, string>;
   /** When set, each field row gets a Role selector and the result carries `mapping`. */
   roleOptions?: RoleOption[];
-  /** When set, each field row gets a "Show in list" toggle controlling whether its value shows
-   * as extra info in the endpoints list - only meaningful for endpoint types. */
+  /** When set, each field row gets a "Show in list" toggle controlling whether its value appears
+   * in the corresponding device or endpoint list. */
   supportsListVisibility?: boolean;
 }
 
@@ -74,6 +75,7 @@ export default function TypeFormDialog({
   initial,
   singularLabel,
   isPending,
+  canSave = true,
   browserKindOptions,
   defaultFields,
   defaultMapping,
@@ -199,7 +201,7 @@ export default function TypeFormDialog({
 
         <div className="px-6 py-4 space-y-5 overflow-y-auto">
           {isEdit && (
-            <Field label="Type ID">
+            <Field label="Type ID" info="The system-generated identifier for this type. It is read-only and is used internally to reference the type.">
               <Input
                 type="text"
                 value={(initial as TypeRecord).type_id}
@@ -209,7 +211,7 @@ export default function TypeFormDialog({
             </Field>
           )}
 
-          <Field label="Label *">
+          <Field label="Label *" info="The human-readable name displayed when users select or view this type. Enter a concise name.">
             <Input
               type="text"
               placeholder="Human readable name"
@@ -218,7 +220,7 @@ export default function TypeFormDialog({
             />
           </Field>
 
-          <Field label="Description">
+          <Field label="Description" info="Optional summary explaining what this type represents. It is displayed as supporting information in the type list.">
             <Input
               type="text"
               placeholder="Optional description"
@@ -228,7 +230,7 @@ export default function TypeFormDialog({
           </Field>
 
           {browserKindOptions && (
-            <Field label="Browse Action">
+            <Field label="Browse Action" info="Select the registered browser action used to open or inspect instances of this type. Choose None when no browse action applies.">
               <Select
                 value={browserKind || NO_BROWSER_KIND}
                 onValueChange={(v) => setBrowserKind(v === NO_BROWSER_KIND ? "" : v)}
@@ -269,7 +271,7 @@ export default function TypeFormDialog({
           <Button
             type="button"
             onClick={handleSave}
-            disabled={isPending || duplicateKeys.size > 0}
+            disabled={!canSave || isPending || duplicateKeys.size > 0}
           >
             {isPending ? "Saving..." : isEdit ? "Save changes" : `Add ${singularLabel.toLowerCase()}`}
           </Button>

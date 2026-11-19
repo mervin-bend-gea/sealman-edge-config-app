@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { AccordionItem, AccordionTrigger, AccordionContent } from "@/components/ui/accordion";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
@@ -7,6 +7,7 @@ import { MappedEndpoint, MappedPort } from "@/generated/edge-administration/hook
 import { EndpointDialogs, EndpointIdentity, EndpointPrimaryAction, PortActions, } from "./endpointShared";
 import { BrowseTarget, portNeedsAssignment, useEndpointDisplay } from "./endpointLogic";
 import { endpointListKey, portListKey } from "./overviewMerge";
+import { useShowConnectionState } from "./connectionStateContext";
 
 interface props {
   endpoint: MappedEndpoint;
@@ -14,24 +15,46 @@ interface props {
   onCreated: () => void;
   onOpenDetails: (endpointId: string) => void;
   onOpenServiceDetails: (serviceId: string) => void;
+  highlighted?: boolean;
+  onHighlightDone?: () => void;
 }
 
-export default function EndpointAccordionItem({ endpoint, deviceId, onCreated, onOpenDetails, onOpenServiceDetails }: props) {
+const HIGHLIGHT_DURATION_MS = 4000;
+
+export default function EndpointAccordionItem({ endpoint, deviceId, onCreated, onOpenDetails, onOpenServiceDetails, highlighted = false, onHighlightDone }: props) {
   const display = useEndpointDisplay(endpoint);
+  const showState = useShowConnectionState();
   const { needsAssignment, isConfigured } = display;
   const [assignEndpointOpen, setAssignEndpointOpen] = useState(false);
   const [assignPort, setAssignPort] = useState<MappedPort | null>(null);
   const [browsing, setBrowsing] = useState<BrowseTarget | null>(null);
+  const rowRef = useRef<HTMLDivElement>(null);
+  const onHighlightDoneRef = useRef(onHighlightDone);
+  useEffect(() => {
+    onHighlightDoneRef.current = onHighlightDone;
+  }, [onHighlightDone]);
+
+  // Scroll to the row and flash it for a few seconds, once.
+  useEffect(() => {
+    if (!highlighted) return;
+    rowRef.current?.scrollIntoView?.({ block: "center", behavior: "smooth" });
+    const timer = setTimeout(() => onHighlightDoneRef.current?.(), HIGHLIGHT_DURATION_MS);
+    return () => clearTimeout(timer);
+  }, [highlighted]);
 
   return (
     <AccordionItem value={endpointListKey(endpoint)} className="last:border-b-0">
-      <div className={`flex items-center pr-4 ${needsAssignment ? "bg-amber-50" : ""}`}>
+      <div
+        ref={rowRef}
+        data-highlighted={highlighted || undefined}
+        className={`flex items-center pr-4 ${needsAssignment ? "bg-amber-50" : ""} ${highlighted ? "animate-search-highlight" : ""}`}
+      >
         <div className="flex-1">
           <AccordionTrigger className="px-4 hover:no-underline hover:bg-muted/40">
             <div className="flex items-center justify-between w-full gap-4">
               <EndpointIdentity display={display} />
               <div className="flex items-center gap-3 shrink-0">
-                <EndpointStatus value={endpoint.status} type="icon" />
+                {showState && <EndpointStatus value={endpoint.status} type="icon" />}
               </div>
             </div>
           </AccordionTrigger>
@@ -53,10 +76,10 @@ export default function EndpointAccordionItem({ endpoint, deviceId, onCreated, o
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="w-[100px]">Status</TableHead>
+                {showState && <TableHead className="w-[100px]">Status</TableHead>}
                 <TableHead className="w-[100px]">Port</TableHead>
                 <TableHead>Service</TableHead>
-                <TableHead>Last status change</TableHead>
+                {showState && <TableHead>Last status change</TableHead>}
                 <TableHead className="text-right"></TableHead>
               </TableRow>
             </TableHeader>
@@ -72,9 +95,11 @@ export default function EndpointAccordionItem({ endpoint, deviceId, onCreated, o
                   className={[needsPortAssignment ? "bg-amber-50" : "", serviceId ? "cursor-pointer hover:bg-muted/40" : ""].join(" ")}
                   onClick={serviceId ? () => onOpenServiceDetails(serviceId) : undefined}
                 >
-                  <TableCell>
-                    <EndpointStatus value={port.status} type="text" />
-                  </TableCell>
+                  {showState && (
+                    <TableCell>
+                      <EndpointStatus value={port.status} type="text" />
+                    </TableCell>
+                  )}
                   <TableCell>
                     <Port value={port.port != null ? port.port.toString() : "-"} />
                   </TableCell>
@@ -90,9 +115,11 @@ export default function EndpointAccordionItem({ endpoint, deviceId, onCreated, o
                       )}
                     </div>
                   </TableCell>
-                  <TableCell>
-                    <LastStatusChange date={port.lastStatusChange ?? undefined} variant="outline" />
-                  </TableCell>
+                  {showState && (
+                    <TableCell>
+                      <LastStatusChange date={port.lastStatusChange ?? undefined} variant="outline" />
+                    </TableCell>
+                  )}
                   <TableCell className="text-right">
                     <PortActions
                       endpoint={endpoint}

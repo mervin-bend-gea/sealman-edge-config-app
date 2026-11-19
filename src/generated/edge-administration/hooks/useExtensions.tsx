@@ -84,5 +84,5 @@ export function useIssueExtensionDeviceKey() {
 }
 
 export function useRevokeExtensionDeviceKey() {
-    return edgeApi.useMutation("delete", "/extensions/{name}/device-keys/{device_id}");
+    return edgeApi.useMutation("delete", "/extensions/{name}/device-keys/by-id/{key_id}");
 }

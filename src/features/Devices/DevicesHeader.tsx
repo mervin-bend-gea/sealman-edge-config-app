@@ -1,5 +1,4 @@
-import { useEffect, useState } from "react";
-import Badge, { BadgeColor } from "../../components/Typography/Badge";
+import { ReactNode, useEffect, useState } from "react";
 import { CountryDeviceInfoDict } from "./DevicesByCountry";
 import useGetDevices from "@/generated/edge-administration/hooks/useGetDevices/useGetDevices";
 
@@ -9,6 +8,8 @@ export interface DevicesHeaderProps {
   deviceOnlineFilter: DeviceOnlineFilterStatus;
   setDeviceOnlineFilter: (status: DeviceOnlineFilterStatus) => void;
   onSelectCountriesChanged?: (selectedCountryDevices: CountryDeviceInfoDict) => void;
+  /** Shown after the status pills, in the same row (e.g. the search filter chips). */
+  children?: ReactNode;
 }
 
 export enum DeviceOnlineFilterStatus {
@@ -18,10 +19,9 @@ export enum DeviceOnlineFilterStatus {
 }
 
 export default function DevicesHeader({
-  showGeolocationInfo = false,
-  missingGeolocationCount = 0,
   deviceOnlineFilter,
   setDeviceOnlineFilter,
+  children,
 }: DevicesHeaderProps) {
   const { data, isSuccess } = useGetDevices();
 
@@ -73,9 +73,10 @@ export default function DevicesHeader({
           )
         }
       />
-      {showGeolocationInfo ? (
-        <Badge color={BadgeColor.Gray}>{missingGeolocationCount} Missing Geolocation</Badge>
-      ) : null}
+      {/* {showGeolocationInfo ? (
+        // <Badge color={BadgeColor.Gray}>{missingGeolocationCount} Missing Geolocation</Badge>
+      ) : null} */}
+      {children}
     </div>
   );
 }

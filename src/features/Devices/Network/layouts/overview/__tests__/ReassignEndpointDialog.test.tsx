@@ -63,7 +63,6 @@ describe("ReassignEndpointDialog", () => {
   it("keeps the stored value instead of the new type's default", async () => {
     renderDialog();
     await selectType("Sensor");
-    await userEvent.selectOptions(screen.getByRole("combobox"), "sensor");
     expect(screen.getByDisplayValue("S-1")).toBeInTheDocument();
     expect(screen.queryByDisplayValue("UNKNOWN")).not.toBeInTheDocument();
   });
@@ -71,7 +70,6 @@ describe("ReassignEndpointDialog", () => {
   it("sends type_id and only non-empty values, so nothing stored is deleted", async () => {
     const onReassigned = renderDialog();
     await selectType("Sensor");
-    await userEvent.selectOptions(screen.getByRole("combobox"), "sensor");
     await userEvent.click(screen.getByRole("button", { name: "Reassign" }));
     expect(mocks.updateEndpoint).toHaveBeenCalledWith({
       endpointId: "e1",
@@ -83,7 +81,6 @@ describe("ReassignEndpointDialog", () => {
   it("sends a value the user typed for an empty field", async () => {
     renderDialog();
     await selectType("Sensor");
-    await userEvent.selectOptions(screen.getByRole("combobox"), "sensor");
     const inputs = screen.getAllByRole("textbox");
     await userEvent.type(inputs[inputs.length - 1], "hall");
     await userEvent.click(screen.getByRole("button", { name: "Reassign" }));

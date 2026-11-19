@@ -45,6 +45,16 @@
   --color-input: hsl(var(--input));
   --color-ring: hsl(var(--ring));
 
+  --color-nav: hsl(var(--nav));
+  --color-nav-foreground: hsl(var(--nav-foreground));
+  --color-nav-active: hsl(var(--nav-active));
+  --color-nav-active-foreground: hsl(var(--nav-active-foreground));
+  --color-header-from: hsl(var(--header-from));
+  --color-header-via: hsl(var(--header-via));
+  --color-header-to: hsl(var(--header-to));
+  --color-header-border: hsl(var(--header-border));
+  --color-page: hsl(var(--page));
+
   --color-chart-1: hsl(var(--chart-1));
   --color-chart-2: hsl(var(--chart-2));
   --color-chart-3: hsl(var(--chart-3));
@@ -59,6 +69,7 @@
   --animate-accordion-up: accordion-up 0.2s ease-out;
   --animate-sweep: sweep 5s ease-in-out infinite;
   --animate-breathe: breathe 3s ease-in-out infinite;
+  --animate-search-highlight: search-highlight 1.2s ease-in-out 3;
 
   @keyframes sweep {
     0% {
@@ -76,6 +87,18 @@
     }
     50% {
       opacity: 1;
+    }
+  }
+
+  @keyframes search-highlight {
+    0%,
+    100% {
+      background-color: transparent;
+      box-shadow: inset 0 0 0 0 transparent;
+    }
+    50% {
+      background-color: rgb(219 234 254);
+      box-shadow: inset 0 0 0 2px rgb(59 130 246);
     }
   }
 
@@ -188,6 +211,16 @@
         --chart-4: 43 74% 66%;
         --chart-5: 27 87% 67%;
         --radius: 0.5rem;
+        /* App shell - keep in sync with src/features/Appearance/themes.ts */
+        --nav: 223 65% 17%;
+        --nav-foreground: 213 27% 84%;
+        --nav-active: 221 83% 53%;
+        --nav-active-foreground: 0 0% 100%;
+        --header-from: 0 0% 100%;
+        --header-via: 214 100% 97% / 0.6;
+        --header-to: 214 95% 93% / 0.7;
+        --header-border: 214 95% 93%;
+        --page: 210 20% 98%;
     }
   .dark {
         --background: 0 0% 3.9%;
@@ -254,3 +287,39 @@
   .water-loader .wl-wave-front,
   .water-loader .wl-wave-back { animation: none; }
 }
+
+/* Placeholder highlighting in the module template editor (Ace markers) */
+.ace_marker-layer .tpl-ph-variable,
+.ace_marker-layer .tpl-ph-device,
+.ace_marker-layer .tpl-ph-endpoint,
+.ace_marker-layer .tpl-ph-escape,
+.ace_marker-layer .tpl-ph-invalid {
+  position: absolute;
+  z-index: 4;
+  border-radius: 3px;
+}
+.ace_marker-layer .tpl-ph-variable { background: rgba(22, 163, 74, 0.22); box-shadow: inset 0 0 0 1px rgba(22, 163, 74, 0.55); }
+.ace_marker-layer .tpl-ph-device { background: rgba(37, 99, 235, 0.2); box-shadow: inset 0 0 0 1px rgba(37, 99, 235, 0.55); }
+.ace_marker-layer .tpl-ph-endpoint { background: rgba(147, 51, 234, 0.2); box-shadow: inset 0 0 0 1px rgba(147, 51, 234, 0.55); }
+.ace_marker-layer .tpl-ph-escape { background: rgba(100, 116, 139, 0.2); }
+.ace_marker-layer .tpl-ph-invalid { background: rgba(220, 38, 38, 0.2); box-shadow: inset 0 -2px 0 rgba(220, 38, 38, 0.8); }
+/* block reference: { "$ref": "<block name>" } */
+.ace_marker-layer .tpl-ref {
+  position: absolute;
+  z-index: 4;
+  border-radius: 3px;
+  background: rgba(124, 58, 237, 0.3);
+  box-shadow: inset 0 0 0 1px rgba(124, 58, 237, 0.7);
+}
+/* the key of a block copy in the "Blocks used" panel */
+.tpl-copy-chip {
+  display: inline-block;
+  border: 1px solid #c4b5fd;
+  border-radius: 6px;
+  background: #ede9fe;
+  color: #4c1d95;
+  padding: 0 6px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+.dark .tpl-copy-chip { border-color: #6d28d9; background: rgba(124, 58, 237, 0.25); color: #ddd6fe; }

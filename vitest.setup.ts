@@ -7,6 +7,8 @@ Element.prototype.hasPointerCapture ??= () => false
 Element.prototype.setPointerCapture ??= () => {}
 Element.prototype.releasePointerCapture ??= () => {}
 Element.prototype.scrollIntoView ??= () => {}
+// cmdk (comboboxes) observes its list size
+globalThis.ResizeObserver ??= class { observe() {} unobserve() {} disconnect() {} }
 
 afterEach(() => {
   cleanup()

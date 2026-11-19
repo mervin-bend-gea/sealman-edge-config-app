@@ -18,6 +18,7 @@ import { MappedEndpoint } from "@/generated/edge-administration/hooks/network/us
 import { endpointListKey } from "./overviewMerge";
 import EndpointTile, { EndpointNode, EndpointNodeData } from "./EndpointTile";
 import GatewayTile, { GatewayNode } from "./GatewayTile";
+import { useShowConnectionState } from "./connectionStateContext";
 import {
   GATEWAY_EDGE_SPACE,
   GATEWAY_ESTIMATED_HEIGHT,
@@ -41,6 +42,8 @@ const EDGE_COLORS: Record<MappedEndpoint["status"], string> = {
   unknown: "#fb923c",
 };
 
+const NEUTRAL_COLOR = "#94a3b8";
+
 const noop = () => {};
 
 interface props {
@@ -56,14 +59,16 @@ interface Size {
   height: number;
 }
 
-function miniMapColor(node: { id?: string; data?: Record<string, unknown> }): string {
+function miniMapColor(node: { id?: string; data?: Record<string, unknown> }, showState: boolean): string {
   if (node.id === GATEWAY_ID) return "#2563eb";
+  if (!showState) return NEUTRAL_COLOR;
   const status = (node.data?.endpoint as MappedEndpoint | undefined)?.status;
   return status === "online" ? "#22c55e" : status === "offline" ? "#f87171" : "#fb923c";
 }
 
 function CanvasInner({ endpoints, deviceId, onEndpointCreated, onOpenDetails, onOpenServiceDetails }: props) {
   const { fitView } = useReactFlow();
+  const showState = useShowConnectionState();
 
   // Only tiles the user has dragged have a stored position (and survive a reload); every other tile is
   // placed automatically, so a tile that grows (more services) pushes the auto-placed tiles below it down.
@@ -122,10 +127,10 @@ function CanvasInner({ endpoints, deviceId, onEndpointCreated, onOpenDetails, on
           target: id,
           type: "smoothstep",
           selectable: false,
-          style: { stroke: EDGE_COLORS[endpoint.status], strokeWidth: 2 },
+          style: { stroke: showState ? EDGE_COLORS[endpoint.status] : NEUTRAL_COLOR, strokeWidth: 2 },
         };
       }),
-    [endpoints],
+    [endpoints, showState],
   );
 
   const onNodesChange = useCallback((changes: NodeChange<AssetNode>[]) => {
@@ -181,7 +186,7 @@ function CanvasInner({ endpoints, deviceId, onEndpointCreated, onOpenDetails, on
       >
         <Background variant={BackgroundVariant.Dots} gap={20} size={1.5} color="#cbd5e1" />
         <Controls showInteractive={false} />
-        <MiniMap pannable zoomable nodeColor={miniMapColor} className="hidden lg:block" />
+        <MiniMap pannable zoomable nodeColor={(node) => miniMapColor(node, showState)} className="hidden lg:block" />
         <Panel position="top-right">
           <Button variant="outline" size="sm" onClick={resetLayout} className="bg-background">
             <LayoutGrid /> Reset layout

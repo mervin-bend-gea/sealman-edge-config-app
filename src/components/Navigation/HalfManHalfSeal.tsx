@@ -1,7 +1,7 @@
 import { useCallback, useState } from "react";
 import SealmanEasterEgg from "./SealmanEasterEgg";
 
-export default function HalfManHalfSeal() {
+export default function HalfManHalfSeal({ collapsed = false }: { collapsed?: boolean }) {
   const [playing, setPlaying] = useState(false);
   const close = useCallback(() => setPlaying(false), []);
 
@@ -10,12 +10,15 @@ export default function HalfManHalfSeal() {
       <button
         type="button"
         onClick={() => setPlaying(true)}
-        className="flex cursor-default items-center gap-2 rounded text-[11px] font-bold uppercase tracking-[0.3em] select-none focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-ring"
+        className={`flex w-full items-center rounded text-[10px] font-bold uppercase select-none transition-opacity hover:opacity-90 focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-white/70 ${
+          collapsed ? "justify-center gap-1 tracking-[0.04em]" : "justify-center gap-1.5 tracking-[0.12em]"
+        }`}
         aria-label="Half man, half seal"
+        title="Half Man, Half Seal"
       >
-        <span className="text-night-blue">Half Man</span>
-        <span className="h-2.5 w-2.5 rounded-full border-2 border-active-blue" aria-hidden="true" />
-        <span className="bg-linear-to-r from-active-blue to-teal-500 bg-clip-text text-transparent">Half Seal</span>
+        <span className="text-slate-200">{collapsed ? "HM" : "Half Man"}</span>
+        <span className="h-2 w-2 shrink-0 rounded-full border-2 border-sky-400" aria-hidden="true" />
+        <span className="bg-linear-to-r from-sky-400 to-teal-400 bg-clip-text text-transparent">{collapsed ? "HS" : "Half Seal"}</span>
       </button>
       {playing && <SealmanEasterEgg onClose={close} />}
     </>

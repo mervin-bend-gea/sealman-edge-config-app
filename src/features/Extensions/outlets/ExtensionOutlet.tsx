@@ -6,7 +6,7 @@ import { useContributions, type Contribution } from "./useExtensionUi";
 
 type ExtensionOutletProps = {
   target: OutletTarget;
-  placement: "section" | "replace:config";
+  placement: "section" | "replace:config" | "replace:page";
   /** Passed to each panel as `props.context`; also filters contributions by their `when`. */
   context: object;
   onDataChanged?: () => void;
@@ -27,7 +27,7 @@ export default function ExtensionOutlet({
     context as Record<string, unknown>
   );
   const contextKey = JSON.stringify(context);
-  const isReplace = placement === "replace:config";
+  const isReplace = placement.startsWith("replace:");
 
   const render = (c: Contribution, errorFallback: ReactNode) => (
     <PanelHost contribution={c} contextKey={contextKey} onDataChanged={onDataChanged} errorFallback={errorFallback} />

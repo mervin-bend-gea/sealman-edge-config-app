@@ -1,9 +1,9 @@
-import SectionLayout from "@/layouts/SectionLayout";
-
-const ASSET_CONFIGURATION_TABS = [
-  { label: "Asset Types", path: "asset-types" },
-];
+import { Outlet } from "react-router-dom";
 
 export default function AssetConfigurationLayout() {
-  return <SectionLayout tabs={ASSET_CONFIGURATION_TABS} />;
+  return (
+    <div className="h-full min-h-0 min-w-0 p-4 lg:p-6">
+      <Outlet />
+    </div>
+  );
 }

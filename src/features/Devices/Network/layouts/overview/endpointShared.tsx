@@ -9,6 +9,7 @@ import AssignEndpointDialog from "./AssignEndpointDialog";
 import AssignServiceDialog from "./AssignServiceDialog";
 import BrowseDialog from "./BrowseDialog";
 import type { BrowseTarget, EndpointDisplay } from "./endpointLogic";
+import { useShowConnectionState } from "./connectionStateContext";
 
 /**
  * Building blocks shared by the list view (EndpointAccordionItem) and the canvas view (EndpointTile),
@@ -102,6 +103,8 @@ export function PortActions({
 }) {
   const target = resolveBrowseTarget(endpoint.ip, port.port);
   const kind = port.browser_kind;
+  // Without connection states (network scan disabled) there's nothing to gate Browse on.
+  const browseBlocked = useShowConnectionState() && port.status !== "online";
   return (
     <div className="flex items-center justify-end gap-2">
       {port.source !== "configured" && isConfigured && (
@@ -122,8 +125,8 @@ export function PortActions({
         <Button
           variant="outline"
           size="sm"
-          disabled={port.status !== "online"}
-          title={port.status !== "online" ? "Only available while the service is online" : undefined}
+          disabled={browseBlocked}
+          title={browseBlocked ? "Only available while the service is online" : undefined}
           onClick={(e) => {
             e.stopPropagation();
             onBrowse({ kind, ...target });

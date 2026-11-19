@@ -6,6 +6,8 @@ const SETTINGS_TABS = [
   { label: "Seal-Agent", path: "seal-agent" },
   { label: "Azure IoT Edge", path: "azure-iot-edge" },
   { label: "SEMS", path: "sealman-ems" },
+  { label: "Appearance", path: "appearance" },
+  { label: "Platform Functions", path: "platform-functions" },
 ];
 
 export default function SettingsLayout() {

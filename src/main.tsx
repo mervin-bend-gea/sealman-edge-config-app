@@ -5,6 +5,7 @@ import App from "./App";
 import "./lib/browsers/registerBrowsers";
 
 import { AuthProvider } from "./auth";
+import AppearanceStyles from "./features/Appearance/AppearanceStyles";
 
 const root = ReactDOM.createRoot(
 	document.getElementById("root") as HTMLElement
@@ -12,6 +13,7 @@ const root = ReactDOM.createRoot(
 
 root.render(
 	<React.StrictMode>
+		<AppearanceStyles />
 		<AuthProvider>
 			<App />
 		</AuthProvider>

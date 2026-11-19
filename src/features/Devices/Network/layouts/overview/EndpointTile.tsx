@@ -13,6 +13,7 @@ import {
   PortActions,
 } from "./endpointShared";
 import { BrowseTarget, portNeedsAssignment, useEndpointDisplay } from "./endpointLogic";
+import { useShowConnectionState } from "./connectionStateContext";
 
 export interface EndpointNodeData extends Record<string, unknown> {
   endpoint: MappedEndpoint;
@@ -34,6 +35,7 @@ const STATUS_ACCENT: Record<MappedEndpoint["status"], string> = {
 export default function EndpointTile({ data }: NodeProps<EndpointNode>) {
   const { endpoint, deviceId, onCreated, onOpenDetails, onOpenServiceDetails } = data;
   const display = useEndpointDisplay(endpoint);
+  const showState = useShowConnectionState();
   const { isConfigured, isUnidentified, needsAssignment } = display;
 
   const [assignEndpointOpen, setAssignEndpointOpen] = useState(false);
@@ -45,15 +47,17 @@ export default function EndpointTile({ data }: NodeProps<EndpointNode>) {
   return (
     <div
       style={{ width: TILE_WIDTH }}
-      className={`cursor-grab overflow-hidden rounded-xl border border-l-4 bg-background shadow-sm transition-shadow hover:shadow-md active:cursor-grabbing ${border} ${STATUS_ACCENT[endpoint.status]}`}
+      className={`cursor-grab overflow-hidden rounded-xl border border-l-4 bg-background shadow-sm transition-shadow hover:shadow-md active:cursor-grabbing ${border} ${showState ? STATUS_ACCENT[endpoint.status] : "border-l-slate-300"}`}
     >
       <Handle type="target" position={Position.Top} isConnectable={false} className="opacity-0!" />
       <div className={`flex items-start gap-2 border-b px-3 py-3 ${needsAssignment ? "bg-amber-50" : isUnidentified ? "bg-orange-50/60" : "bg-slate-50/60"}`}>
         <GripVertical className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground/60" aria-hidden="true" />
         <EndpointIdentity display={display} className="min-w-0 flex-1" />
-        <div className="shrink-0 pt-0.5">
-          <EndpointStatus value={endpoint.status} type="icon" />
-        </div>
+        {showState && (
+          <div className="shrink-0 pt-0.5">
+            <EndpointStatus value={endpoint.status} type="icon" />
+          </div>
+        )}
       </div>
 
       <div className="space-y-2 p-3">
@@ -80,7 +84,7 @@ export default function EndpointTile({ data }: NodeProps<EndpointNode>) {
                         {port.type_label ?? "Unidentified"}
                       </span>
                     </div>
-                    <EndpointStatus value={port.status} type="text" />
+                    {showState && <EndpointStatus value={port.status} type="text" />}
                   </div>
                   <div className="mt-2 flex items-center justify-between gap-2">
                     <div className="flex min-w-0 items-center gap-2">
@@ -89,7 +93,7 @@ export default function EndpointTile({ data }: NodeProps<EndpointNode>) {
                           Not assigned
                         </Badge>
                       )}
-                      <LastStatusChange date={port.lastStatusChange ?? undefined} variant="outline" />
+                      {showState && <LastStatusChange date={port.lastStatusChange ?? undefined} variant="outline" />}
                     </div>
                     <PortActions
                       endpoint={endpoint}

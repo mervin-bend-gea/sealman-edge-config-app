@@ -13,7 +13,7 @@ import useSmartEmsStatusPolling from "./useSmartEmsStatusPolling";
 
 const TABS = [
   { title: "Network Interfaces", path: "network-interfaces" },
-  { title: "Firmware", path: "firmware" },
+  // { title: "Firmware", path: "firmware" },
   { title: "NAT", path: "nat" },
   { title: "Port Forwarding", path: "port-forwarding" },
   { title: "Security", path: "security" },
@@ -50,8 +50,8 @@ export default function DeviceConfig() {
               to={`${base}/${tab.path}`}
               className={({ isActive }) =>
                 `rounded-md px-3 py-2 transition-colors ${
-                  isActive ? "bg-muted text-foreground shadow-sm" : "hover:bg-muted/60 hover:text-foreground"
-                }`
+                  tab.path === "config-activity" ? "mt-3 border-t border-border pt-4" : ""
+                } ${isActive ? "bg-muted text-foreground shadow-sm" : "hover:bg-muted/60 hover:text-foreground"}`
               }
             >
               {tab.title}

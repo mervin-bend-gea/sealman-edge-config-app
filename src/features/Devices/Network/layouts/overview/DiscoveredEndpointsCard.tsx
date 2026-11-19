@@ -10,11 +10,16 @@ interface props {
   deviceId: string;
   onScan: () => void;
   isScanning: boolean;
+  scanDisabled?: boolean;
+  scanAvailable?: boolean;
   onAddEndpoint: () => void;
   onEndpointCreated: () => void;
   onOpenDetails: (endpointId: string) => void;
   onOpenServiceDetails: (serviceId: string) => void;
   viewToggle?: ReactNode;
+  // The endpoint to scroll to and flash (e.g. when arriving from the device search).
+  highlightedEndpointId?: string | null;
+  onHighlightDone?: () => void;
 }
 
 export default function DiscoveredEndpointsCard({
@@ -22,11 +27,15 @@ export default function DiscoveredEndpointsCard({
   deviceId,
   onScan,
   isScanning,
+  scanDisabled,
+  scanAvailable,
   onAddEndpoint,
   onEndpointCreated,
   onOpenDetails,
   onOpenServiceDetails,
   viewToggle,
+  highlightedEndpointId,
+  onHighlightDone,
 }: props) {
   return (
     <div className="space-y-4">
@@ -37,7 +46,7 @@ export default function DiscoveredEndpointsCard({
             Physical machines and systems discovered on the network. Expand each endpoint to view its services.
           </p>
         </div>
-        <EndpointActions onScan={onScan} isScanning={isScanning} onAddEndpoint={onAddEndpoint} leading={viewToggle} />
+        <EndpointActions deviceId={deviceId} onScan={onScan} isScanning={isScanning} scanDisabled={scanDisabled} scanAvailable={scanAvailable} onAddEndpoint={onAddEndpoint} leading={viewToggle} />
       </div>
 
       <div className="border rounded-lg overflow-hidden bg-background">
@@ -53,6 +62,8 @@ export default function DiscoveredEndpointsCard({
                 onCreated={onEndpointCreated}
                 onOpenDetails={onOpenDetails}
                 onOpenServiceDetails={onOpenServiceDetails}
+                highlighted={endpoint.endpoint_id != null && endpoint.endpoint_id === highlightedEndpointId}
+                onHighlightDone={onHighlightDone}
               />
             ))}
           </Accordion>

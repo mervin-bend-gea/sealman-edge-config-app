@@ -6,7 +6,7 @@ import { contributionPath } from "./useNavContributions";
 import { useContributions } from "./useExtensionUi";
 
 type RoutedExtensionPanelProps = {
-  target: "device" | "global";
+  target: "device" | "global" | "module";
   placement: "tab" | "page";
   context: object;
 };

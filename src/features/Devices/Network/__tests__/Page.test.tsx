@@ -79,18 +79,17 @@ describe("Network Page", () => {
     useGetModuleTwinConfigMocked.mockRestore()
   })
 
-  it("should block the page when the required module is not deployed", () => {
+  it("should still render the assets when the network discover module is not deployed", () => {
     useGetModuleTwinConfigMocked.mockReturnValue({
       isLoading: false,
       isError: true,
       error: new ApiError("module missing", 404),
     })
 
-    const { getByText, queryByTestId } = render(<Page deviceId="deviceId" />)
+    const { getByTestId, queryByText } = render(<Page deviceId="deviceId" />)
 
-    getByText("Missing module")
-    getByText(`Module "${NETWORK_DISCOVER_MODULE_NAME}" is required for this functionality.`)
-    expect(queryByTestId("NetworkMainLayout")).not.toBeInTheDocument()
+    getByTestId("NetworkMainLayout")
+    expect(queryByText("Missing module")).not.toBeInTheDocument()
 
     cleanup()
     useGetModuleTwinConfigMocked.mockRestore()

@@ -117,3 +117,25 @@ describe("FieldsEditor role selector", () => {
     expect(buildMappingPayload(latest.rows)).toEqual({ host: "ip" });
   });
 });
+
+describe("FieldsEditor list visibility", () => {
+  it("updates show_in_list when the toggle changes", async () => {
+    const onChange = vi.fn();
+    render(
+      <FieldsEditor
+        rows={rowsFromFields({ serial: stringField("Serial") })}
+        onChange={onChange}
+        showListVisibility
+      />,
+    );
+
+    await userEvent.click(screen.getAllByRole("switch")[2]);
+
+    expect(onChange).toHaveBeenCalledWith([
+      expect.objectContaining({
+        key: "serial",
+        definition: expect.objectContaining({ show_in_list: false }),
+      }),
+    ]);
+  });
+});

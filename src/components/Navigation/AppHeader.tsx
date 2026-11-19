@@ -4,8 +4,9 @@ import { ChevronDownIcon } from "@heroicons/react/24/outline";
 import { useMemo } from "react";
 
 import SignOutButton from "../Auth/SignOutButton";
-import logo from "../../assets/sealman_logo.png";
+import defaultLogo from "../../assets/sealman_logo.png";
 import { useAuth } from "@/auth";
+import { useActiveBranding } from "@/features/Appearance/appearanceStore";
 import { Button } from "@/components/ui/button";
 
 // Docs and Help are placeholders until the targets exist.
@@ -16,15 +17,16 @@ const HEADER_LINKS = [
 
 export default function AppHeader() {
   const auth = useAuth();
+  const logo = useActiveBranding().logoUrl ?? defaultLogo;
 
   const initials = useMemo(() => {
     return auth.user?.name?.split(" ").map((n) => n[0]).join("") || "";
   }, [auth.user?.name]);
 
   return (
-    <header className="relative z-10 flex h-14 shrink-0 items-center justify-between border-b border-blue-100 bg-linear-to-r from-white via-blue-50/60 to-blue-100/70 px-4 shadow-sm">
+    <header className="relative z-10 flex h-14 shrink-0 items-center justify-between border-b border-header-border bg-linear-to-r from-header-from via-header-via to-header-to px-4 shadow-sm">
       <div className="flex items-center gap-6">
-        <img className="h-10 w-auto max-w-full object-contain" src={logo} alt="Sealman IoT" />
+        <img className="h-10 w-auto max-w-full object-contain" src={logo} alt="Logo" />
       </div>
 
       <div className="flex items-center gap-1">

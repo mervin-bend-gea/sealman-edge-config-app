@@ -6,6 +6,7 @@ import Toggle from "./Toggle";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import type { RoleOption } from "./typeRoles";
+import FieldInfoTooltip from "./FieldInfoTooltip";
 
 export type FieldDefinition = components["schemas"]["FieldDefinition"];
 type FieldType = FieldDefinition["type"];
@@ -136,10 +137,13 @@ export function buildMappingPayload(rows: FieldRow[]): Record<string, string> {
   return mapping;
 }
 
-export function Field({ label, children }: { label: string; children: React.ReactNode }) {
+export function Field({ label, children, info }: { label: string; children: React.ReactNode; info?: string }) {
   return (
     <div className="space-y-1">
-      <label className="text-xs font-medium text-muted-foreground">{label}</label>
+      <div className="flex items-center gap-1.5">
+        <label className="text-xs font-medium text-muted-foreground">{label}</label>
+        {info && <FieldInfoTooltip text={info} />}
+      </div>
       {children}
     </div>
   );
@@ -190,9 +194,8 @@ interface FieldsEditorProps {
   rows: FieldRow[];
   onChange: (rows: FieldRow[]) => void;
   duplicateKeys?: Set<string>;
-  /** When set, shows a "Show in list" toggle per field, controlling whether its value appears as
-   * extra info in the endpoints list (see EndpointAccordionItem.tsx) - only meaningful for
-   * endpoint types today. */
+  /** When set, shows a "Show in list" toggle per field, controlling whether its value appears in
+   * the corresponding device or endpoint list. */
   showListVisibility?: boolean;
   /** When set, each field row gets a Role selector with these roles. A role another row already
    * has is disabled. */
@@ -298,7 +301,7 @@ export default function FieldsEditor({ rows, onChange, duplicateKeys, showListVi
           <div key={row.id} className="border rounded-md p-3 space-y-3 bg-background hover:bg-muted/20 transition-colors">
             <div className="grid grid-cols-12 gap-3">
               <div className="col-span-3">
-                <Field label="Key *">
+                <Field label="Key *" info="The stable identifier used by the API and stored metadata. Use a concise key without spaces, for example device_name. It must be unique within this type.">
                   <input
                     type="text"
                     placeholder="field_key"
@@ -311,7 +314,7 @@ export default function FieldsEditor({ rows, onChange, duplicateKeys, showListVi
               </div>
 
               <div className="col-span-4">
-                <Field label="Label *">
+                <Field label="Label *" info="The human-readable name shown to users in forms and device details. Enter a short descriptive label.">
                   <input
                     type="text"
                     placeholder="Human readable label"
@@ -323,7 +326,7 @@ export default function FieldsEditor({ rows, onChange, duplicateKeys, showListVi
               </div>
 
               <div className="col-span-2">
-                <Field label="Type">
+                <Field label="Type" info="The data type accepted for this field: text, true/false, whole number, or decimal number. Changing the type resets incompatible widget and validation settings.">
                   <Select value={row.definition.type} onValueChange={(v) => handleTypeChange(row, v as FieldType)}>
                     <SelectTrigger className="h-8">
                       <SelectValue />
@@ -339,7 +342,7 @@ export default function FieldsEditor({ rows, onChange, duplicateKeys, showListVi
               </div>
 
               <div className="col-span-2">
-                <Field label="Widget">
+                <Field label="Widget" info="Controls how users enter this value. Available widgets depend on the selected data type. Dropdown and radio widgets require options.">
                   <Select
                     value={ui}
                     onValueChange={(v) =>
@@ -379,12 +382,12 @@ export default function FieldsEditor({ rows, onChange, duplicateKeys, showListVi
             </div>
 
             <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
-              <label className="flex items-center gap-2 text-xs font-medium text-muted-foreground whitespace-nowrap">
+              <label className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground whitespace-nowrap">
                 <Toggle
                   checked={row.definition.required}
                   onChange={(val) => updateDefinition(row.id, { required: val })}
                 />
-                Required
+                Required <FieldInfoTooltip text="When enabled, users must provide a value before the form can be saved. When disabled, the field may be left empty." />
               </label>
 
               <label
@@ -395,25 +398,25 @@ export default function FieldsEditor({ rows, onChange, duplicateKeys, showListVi
                   checked={row.definition.changeable !== false}
                   onChange={(val) => updateDefinition(row.id, { changeable: val })}
                 />
-                Changeable
+                Changeable <FieldInfoTooltip text="When disabled, an instance's value cannot be edited after it has been set. This controls editability of the value, not whether the field appears." />
               </label>
 
               {showListVisibility && (
                 <label
                   className="flex items-center gap-2 text-xs font-medium text-muted-foreground whitespace-nowrap"
-                  title="If on, this field's value shows as extra info next to the IP address in the endpoints list"
+                  title="If on, this field's value appears in the corresponding list or table"
                 >
                   <Toggle
                     checked={row.definition.show_in_list !== false}
                     onChange={(val) => updateDefinition(row.id, { show_in_list: val })}
                   />
-                  Show in list
+                  Show in list <FieldInfoTooltip text="When enabled, this endpoint field is shown as extra information beside the endpoint IP in the endpoints list." />
                 </label>
               )}
 
               {roleOptions && (
                 <label className="flex items-center gap-2 text-xs font-medium text-muted-foreground whitespace-nowrap">
-                  Role
+                  Role <FieldInfoTooltip text="Maps this field to a built-in endpoint or service role. Only roles compatible with this field's data type can be selected." />
                   <select
                     aria-label={`Role of field ${trimmedKey}`}
                     value={row.role ?? ""}
@@ -442,7 +445,7 @@ export default function FieldsEditor({ rows, onChange, duplicateKeys, showListVi
 
             <div className="grid grid-cols-12 gap-3">
               <div className="col-span-5">
-                <Field label="Description">
+                <Field label="Description" info="Optional help text shown with this field when users enter a value. Keep it concise and explain the expected content.">
                   <input
                     type="text"
                     placeholder="Optional help text"
@@ -455,7 +458,7 @@ export default function FieldsEditor({ rows, onChange, duplicateKeys, showListVi
 
               {showOptions && (
                 <div className="col-span-4">
-                  <Field label="Options (comma separated)">
+                  <Field label="Options (comma separated)" info="Choices offered by the Select or Radio widget. Enter one option per comma-separated value.">
                     <input
                       type="text"
                       placeholder="option1, option2, option3"
@@ -468,7 +471,7 @@ export default function FieldsEditor({ rows, onChange, duplicateKeys, showListVi
               )}
 
               <div className={showOptions ? "col-span-3" : "col-span-7"}>
-                <Field label="Default value">
+                <Field label="Default value" info="The initial value suggested for this field. It must match the selected data type and any configured validation rules.">
                   <FieldValueInput
                     definition={row.definition}
                     value={row.definition.default}
@@ -478,9 +481,9 @@ export default function FieldsEditor({ rows, onChange, duplicateKeys, showListVi
               </div>
             </div>
 
-            <label className="flex items-center gap-2 text-xs font-medium text-muted-foreground whitespace-nowrap">
+            <label className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground whitespace-nowrap">
               <Toggle checked={showValidation} onChange={() => toggleValidationVisibility(row.id)} />
-              Validation options
+              Validation options <FieldInfoTooltip text="Optional constraints checked when users enter a value. The available constraints depend on the field's data type." />
             </label>
 
             {showValidation && (
@@ -488,7 +491,7 @@ export default function FieldsEditor({ rows, onChange, duplicateKeys, showListVi
                 {row.definition.type === "string" && (
                   <div className="grid grid-cols-12 gap-3">
                     <div className="col-span-6">
-                      <Field label="Pattern (regex, must fully match)">
+                      <Field label="Pattern (regex, must fully match)" info="A regular expression the entire text value must match. Enter a valid JavaScript-compatible regular expression, for example ^[A-Z]{2}\d{4}$.">
                         <input
                           type="text"
                           placeholder="e.g. ^[A-Z]{2}\d{4}$"
@@ -499,7 +502,7 @@ export default function FieldsEditor({ rows, onChange, duplicateKeys, showListVi
                       </Field>
                     </div>
                     <div className="col-span-3">
-                      <Field label="Min length">
+                      <Field label="Min length" info="Minimum number of characters accepted for a text value. Enter a non-negative whole number.">
                         <input
                           type="number"
                           min={0}
@@ -512,7 +515,7 @@ export default function FieldsEditor({ rows, onChange, duplicateKeys, showListVi
                       </Field>
                     </div>
                     <div className="col-span-3">
-                      <Field label="Max length">
+                      <Field label="Max length" info="Maximum number of characters accepted for a text value. Enter a non-negative whole number that is not below the minimum length.">
                         <input
                           type="number"
                           min={0}
@@ -530,7 +533,7 @@ export default function FieldsEditor({ rows, onChange, duplicateKeys, showListVi
                 {(row.definition.type === "integer" || row.definition.type === "number") && (
                   <div className="grid grid-cols-12 gap-3 items-end">
                     <div className="col-span-2">
-                      <Field label="Minimum">
+                      <Field label="Minimum" info="Lowest accepted numeric value. Enter a number; the exclusive option determines whether the boundary itself is allowed.">
                         <input
                           type="number"
                           value={row.definition.validation?.minimum ?? ""}
@@ -542,7 +545,7 @@ export default function FieldsEditor({ rows, onChange, duplicateKeys, showListVi
                       </Field>
                     </div>
                     <div className="col-span-2">
-                      <Field label="Maximum">
+                      <Field label="Maximum" info="Highest accepted numeric value. Enter a number; the exclusive option determines whether the boundary itself is allowed.">
                         <input
                           type="number"
                           value={row.definition.validation?.maximum ?? ""}
@@ -554,7 +557,7 @@ export default function FieldsEditor({ rows, onChange, duplicateKeys, showListVi
                       </Field>
                     </div>
                     <div className="col-span-2">
-                      <Field label="Multiple of">
+                      <Field label="Multiple of" info="Requires numeric values to be divisible by this number. Enter a positive numeric increment.">
                         <input
                           type="number"
                           min={0}
@@ -572,14 +575,14 @@ export default function FieldsEditor({ rows, onChange, duplicateKeys, showListVi
                         checked={row.definition.validation?.exclusive_minimum ?? false}
                         onChange={(val) => updateValidation(row.id, { exclusive_minimum: val })}
                       />
-                      Exclusive min
+                      Exclusive min <FieldInfoTooltip text="When enabled, values must be greater than the configured minimum. When disabled, the minimum value itself is accepted." />
                     </label>
                     <label className="col-span-3 flex items-center gap-2 text-xs font-medium text-muted-foreground whitespace-nowrap pb-1.5">
                       <Toggle
                         checked={row.definition.validation?.exclusive_maximum ?? false}
                         onChange={(val) => updateValidation(row.id, { exclusive_maximum: val })}
                       />
-                      Exclusive max
+                      Exclusive max <FieldInfoTooltip text="When enabled, values must be less than the configured maximum. When disabled, the maximum value itself is accepted." />
                     </label>
                   </div>
                 )}
